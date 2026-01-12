@@ -1,0 +1,445 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: LO6UKFHFZP
+  bedrock_agent_alias_id: Y1UT4SVWGL
+  bedrock_prompt_session_attributes:
+    date: "This is today's date 2026-01-07"
+    ICULocale: "You must reply in ES regardless of the language used in the user's input"
+  bedrock_session_attributes:
+    entityId: "19a29b57-28cf-4323-950f-7dfd59c37811"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId448"
+vars_glob:
+  vueloTitularCris:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    record_orders_ids: '{"LA0458486AEMD": "2026-02-25"}'
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Miranda"
+  vueloTerceroReconocido:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    record_orders_ids: '{"LA0457888VEAB": "2025-01-05"}'
+    quantity_orders: "2"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Acuña"
+  vueloWilliam:
+    entityId: "3627d565-35f7-4531-9ef0-49830112263f"
+  vueloDanila:
+    entityId: "07a4915b-635a-459c-a1f9-05bb5e4e7d46"
+  vueloLuzia:
+    entityId: "07c268a7-e5f0-40a2-8fdf-c73591affce7"
+  vueloGustavoEMD:
+    entityId: "70a8948a-29dd-42fb-bec5-b4c074be2b64"
+
+tests:
+  # 01. Migración Agente Equipaje - Cuántas maletas puedo llevar
+  "01.consulta_maletas":
+    steps:
+      - El usuario quiere saber cuantas maletas puede llevar según su orden de vuelo
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente informa la cantidad de equipaje permitido según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_INFORMATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    test_case_key: PACONW-T738
+
+  # 02. Migración Agente Equipaje - Cuáles son las tarifas de equipaje disponibles para comprar
+  "02.consulta_tarifas_equipaje":
+    steps:
+      - El usuario quiere saber cuales son las tarifas de equipaje disponibles para comprar
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar las tarifas de equipaje disponibles según canal y ruta.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_INFORMATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    test_case_key: PACONW-T739
+
+  # 03. Migración Agente Equipaje - Es posible cambiar o intercambiar el equipaje facturado de bodega por uno de cabina
+  "03.consulta_intercambio_equipaje":
+    steps:
+      - El usuario pregunta si es posible cambiar o intercambiar el equipaje facturado de bodega por uno de cabina
+      - El usuario indica que no cuenta con una reserva si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente informa las condiciones y restricciones para el cambio de equipaje.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_INFORMATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    test_case_key: PACONW-T740
+
+  # 04. Migración Agente Equipaje - Dónde y cómo puedo comprar equipaje adicional
+  "04.consulta_equipaje_adicional":
+    steps:
+      - El usuario quiere saber dónde y cómo puedo comprar equipaje adicional?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica dónde y cómo comprar equipaje adicional según canal y ruta.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_PURCHASE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    test_case_key: PACONW-T741
+
+  # 05. Migración Agente Equipaje - Compra de equipaje para menor en regazo
+  "05.consulta_equipaje_con_menor_en_regazo":
+    steps:
+      - El usuario indica si puede comprar equipaje para un menor en regazo
+      - El usuario indica que si cuenta con una reserva y desea comprar equipaje para el menor
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente informa las condiciones para equipaje de infantes en regazo. Y pregunta ¿ya tienes reserva?
+      - El agente informa que la venta de maletas o equipaje adicional no está disponible para menores de 2 años que viajen en regazo del adulto responsable. Esto es parte de nuestra política de equipaje para los más pequeños.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_PURCHASE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloDanila.entityId }}"
+    test_case_key: PACONW-T742
+
+  # 06. Migración Agente Equipaje - Valor de maleta por tramo o vuelo
+  "06.consulta_valor_maleta_por_tramo":
+    steps:
+      - El usuario pregunta ¿El valor de la maleta es por tramo o por vuelo? 
+      - El usuario indica que si cuenta con una reserva
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar donde encontrar la información que consulta por el cobro del equipaje según tramo o vuelo. Y pregunta ¿ya tienes reserva?
+      - El agente entrega la información sobre el cobro del equipaje según tramo o vuelo. 
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_PURCHASE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloDanila.entityId }}"
+    test_case_key: PACONW-T743
+
+  # 07. Migración Agente Equipaje - Problemas para comprar equipaje en web
+  "07.consulta_problemas_compra_equipaje_web":
+    steps:
+      - El usuario indica quiero comprar una maleta, pero la página web no me deja
+      - El usuario indica que desea ser transferido
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar alternativas para realizar una compra y soporte
+      - El agente entrega opcion de transferencia a soporte técnico o asistencia para compra de equipaje.
+      - El agente realiza la transferencia según solicitud del usuario.
+      - El agente debe indicar que <categories> sea "BAGGAGE_PURCHASE_ISSUE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T744
+
+  # 08. Migración Agente Equipaje - Maletas no reflejadas en la reserva
+  "08.consulta_maletas_no_reflejadas_en_reserva":
+    steps:
+      - El usuario indica que compró maletas pero no se reflejan en la reserva
+      - El usuario indica que desea ser transferido
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar alternativas para solucionar el problema
+      - El agente entrega opcion de transferencia a soporte técnico o asistencia 
+      - El agente realiza la transferencia según solicitud del usuario.
+      - El agente debe indicar que <categories> sea "BAGGAGE_PURCHASE_ISSUE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T745
+
+  # 09. Migración Agente Equipaje - Maleta faltante tras cambio de boleto
+  "09.consulta_maleta_faltante":
+    steps:
+      - El usuario indica que cambiaron el boleto y falta la maleta en la reserva
+      - El usuario indica que desea ser transferido
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar alternativas para solucionar el problema
+      - El agente entrega opcion de transferencia a soporte técnico o asistencia 
+      - El agente realiza la transferencia según solicitud del usuario.
+      - El agente debe indicar que <categories> sea "BAGGAGE_PURCHASE_ISSUE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T746
+
+  # 10. Migración Agente Equipaje - Equipaje no llegó al vuelo
+  "10.consulta_equipaje_perdido":
+    steps:
+      - El usuario indica mi equipaje no llegó en el vuelo, ¿qué hago?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar el proceso de reclamo inmediato a través de link informado
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "LOST_BAGGAGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T747
+
+  # 11. Migración Agente Equipaje - Reclamo por equipaje ya fuera del aeropuerto
+  "11.consulta_equipaje_perdido_fuera_aeropuerto":
+    steps:
+      - El usuario indica salí del aeropuerto y no tengo mi equipaje, ¿cómo reclamo?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar los canales y plazos de reclamo.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "LOST_BAGGAGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloDanila.entityId }}"
+    test_case_key: PACONW-T748
+
+  # 12. Migración Agente Equipaje - Tiempo de entrega equipaje localizado
+  "12.consulta_equipaje_localizado":
+    steps:
+      - El usuario indica ¿Cuánto tarda la entrega de mi equipaje localizado?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar los tiempos estimados de entrega según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "LOST_BAGGAGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloDanila.entityId }}"
+    test_case_key: PACONW-T749
+
+  # 13. Migración Agente Equipaje - Maleta dañada en aeropuerto
+  "13.consulta_maleta_dañada":
+    steps:
+      - El usuario indica mi maleta fue dañada en el aeropuerto, ¿qué hago?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar el proceso de reclamo por maleta dañada según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "DAMAGED_BAGGAGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloLuzia.entityId }}"
+    test_case_key: PACONW-T750
+
+  # 14. Migración Agente Equipaje - Reembolso por rotura de equipaje
+  "14.consulta_rotura_equipaje":
+    steps:
+      - El usuario indica ¿Tengo reembolso por rotura de equipaje?
+      - El usuario indica que su equipaje llegó dañado o roto si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar el proceso de reembolso por rotura de equipaje según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "DAMAGED_BAGGAGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloLuzia.entityId }}"
+    test_case_key: PACONW-T751
+
+  # 15. Migración Agente Equipaje - Reclamo daño fuera del aeropuerto
+  "15.consulta_daño_fuera_aeropuerto":
+    steps:
+      - El usuario indica ya salí del aeropuerto y mi equipaje está dañado, ¿puedo reclamar?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar el proceso de reclamo por daño fuera del aeropuerto según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "DAMAGED_BAGGAGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloLuzia.entityId }}"
+    test_case_key: PACONW-T752
+
+  # 16. Migración Agente Equipaje - Artículos faltantes en equipaje 
+  "16.consulta_articulos_faltantes_en_equipaje":
+    steps:
+      - El usuario indica faltan artículos dentro de mi equipaje, ¿cómo reclamo?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe informar el proceso de reclamo por artículos faltantes en equipaje según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "MISSING_BAGGAGE_ITEMS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloLuzia.entityId }}"
+    test_case_key: PACONW-T753
+
+  # 17. Migración Agente Equipaje - Plazo para reclamar daño posterior 
+  "17.consulta_plazo_reclamar_daño_posterior":
+    steps:
+      - El usuario indica noté daños o faltantes en equipaje recuperado, ¿qué plazo tengo para reclamar?
+      - El usuario responde que faltaron articulos dentro de su equipaje si el agente pregunta,
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica ¿Su equipaje llegó dañado o roto, o bien le faltaron artículos dentro del mismo?
+      - El agente indica el plazo para reclamar daños o faltantes en equipaje según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "MISSING_BAGGAGE_ITEMS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloLuzia.entityId }}"
+    test_case_key: PACONW-T754
+
+  # 18. Migración Agente Equipaje - Recuperar gastos por pérdida de articulos en equipaje
+  "18.consulta_recuperar_gastos_perdida_articulos":
+    steps:
+      - El usuario indica ¿Cuál es el procedimiento para recuperar gastos por pérdida de bienes que contenía mi maleta?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica el procedimiento para recuperar gastos por pérdida de bienes que contenía su maleta según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "MISSING_BAGGAGE_ITEMS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloLuzia.entityId }}"
+    test_case_key: PACONW-T755
+
+  # 19. Migración Agente Equipaje - Reembolso equipaje no usado 
+  "19.consulta_reembolso_equipaje_no_usado":
+    steps:
+      - El usuario indica necesito un reembolso por el equipaje que compré y no utilice.
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica el procedimiento para reembolso por equipaje no usado según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_REFUND" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T756
+
+  # 20. Migración Agente Equipaje - Reembolso equipaje comprado por agencia 
+  "20.consulta_reembolso_equipaje_por_agencia":
+    steps:
+      - El usuario indica compré equipaje por agencia y quiero solicitar devolución
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica el procedimiento para reembolso por equipaje comprado por agencia según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_REFUND" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T757
+
+  # 21. Migración Agente Equipaje - Devolver solo equipaje 
+  "21.consulta_devolucion_solo_equipaje":
+    steps:
+      - El usuario indica ¿Puedo solicitar devolución solo del equipaje sin devolver el pasaje?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica el procedimiento para reembolso por devolución solo de equipaje según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_REFUND" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T758
+
+  # 22. Migración Agente Equipaje - Alimentos en equipaje
+  "22.consulta_alimentos_en_equipaje":
+    steps:
+      - El usuario indica ¿Puedo llevar alimentos en la maleta de cabina o bodega?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica el procedimiento para llevar alimentos en la maleta de cabina o bodega según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "ALLOWED_ITEMS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T759
+
+  # 23. Migración Agente Equipaje - Restricción líquidos en cabina
+  "23.consulta_liquidos_en_cabina":
+    steps:
+      - El usuario indica ¿Cuáles son las restricciones para líquidos en cabina?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica las restricciones para líquidos en cabina según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "ALLOWED_ITEMS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T760
+
+  # 24. Migración Agente Equipaje - Llevar colonia en equipaje de mano
+  "24.consulta_colonia_en_equipaje_de_mano":
+    steps:
+      - El usuario indica me gustaría saber si en la maleta de mano puedo llevar colonia
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica si es posible llevar colonia en la maleta de mano según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "ALLOWED_ITEMS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T761
+
+  # 25. Migración Agente Equipaje - Perdida de laptop en el vuelo
+  "25.consulta_perdida_laptop_en_vuelo":
+    steps:
+      - El usuario indica perdi mi laptop en el vuelo, ¿qué hago?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica el procedimiento para pérdida de laptop en el vuelo según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "LOST_ITEMS_FLIGHT" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T762
+
+  # 26. Migración Agente Equipaje - Deje mi mochila en el avion
+  "26.consulta_perdida_mochila_en_vuelo":
+    steps:
+      - El usuario indica dejé mi mochila en el avión, ¿qué hago?
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica el procedimiento para pérdida de mochila en el vuelo según política vigente.
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "LOST_ITEMS_FLIGHT" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T763

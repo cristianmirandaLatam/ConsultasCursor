@@ -1,0 +1,61 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: YG1LQGQ07L
+  bedrock_agent_alias_id: RDWCWCSG2N
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId"
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-12-16,
+    locale: You must reply in Spanish regardless of the language used in the user's input.
+vars_glob:
+  pasajeroJoseCerquozzi:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    rut: "285974895"
+    cod_reserva: "ABGLWH"
+    n_vuelo: "LA4405"
+    record_orders_ids: '{"la0458023sczp": "2025-01-05"}'
+    email: "nvivasan@gmail.com"
+    fecha: "05 de diciembre de 2025"
+  vueloTerceroReconocido:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "b9090d19-7c0f-48c9-98ed-55c075d8fd2e"
+    record_orders_ids: '{"LA0458486AEMD": "2025-02-25"}'
+    current_context: "{\"customer_name\": \"User's name is valentina and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[{\\\"order_id\\\": \\\"la0458486aemd\\\", \\\"number_of_flights\\\": 2, \\\"flight_dates\\\": [\\\"2026-02-25\\\", \\\"2026-03-06\\\"]}, {\\\"order_id\\\": \\\"la0457888veab\\\", \\\"number_of_flights\\\": 3, \\\"flight_dates\\\": [\\\"2026-02-26\\\", \\\"2026-03-05\\\", \\\"2026-03-06\\\"]}]\"}"
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Acuña"
+  cod_reserva: "AAAAQQ"
+  n_vuelo: "LA 70"
+tests:
+  # 12 - VALIDACION HVC - ¿quiero pagar la reserva para llevar mi gato en la bodega?
+  validacion_hvc_pago_reserva_gato_bodega:
+    steps:
+      - El usuario pregunta quiero pagar la reserva para llevar mi gato en la bodega
+      - El usuario indica que desconoce los requisitos
+      - El usuario indica si lo puede incluir en la reserva
+      - El usuario indica que no quiere continuar
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe preguntar si ya tiene una reserva previa para su gato y si conoce los requisitos para transportar a su mascota en bodega
+      - El agente indica claro le explica los requisitos principales para transportar el gato certificado de salud veterinario kennel rígido medidas máximas doble seguro peso máximo la mascota debe poder moverse dentro del kennel y condiciones importantes máximo una conexión no superar siete horas no se permiten vuelos mayores a cinco horas en aviones de un solo pasillo recomienda visitar el enlace https://www.latamairlines.com/cl/es/experiencia/prepara-tu-viaje/transporte-de-mascotas/bodega ¿Tienes alguna otra pregunta sobre el transporte de tu gato?
+      - El agente pregunta al cliente tenga en cuenta que el servicio no se puede realizar por la web y necesitará asistencia de un especialista recomienda tener listos peso edad raza tipo y medidas del contenedor ¿Le gustaría que le transfiera con un especialista para completar la reserva?
+      - El agente pregunta si tiene alguna duda o consulta sobre el proceso de cambio
+      - El agente debe derivar a encuesta survey
+      - El agente debe indicar que <categories> sea "PET_AVIH_REQUEST" y <next_action> sea "information"
+    max_turns: 10
+    test_case_key: PACONW-T564
+

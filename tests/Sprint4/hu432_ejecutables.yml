@@ -1,0 +1,495 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: RNNCI2NC91
+  bedrock_agent_alias_id: PPUOPIQNTN
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+    country: "CL"
+    language_code: "es-us"
+    environment: "stg"
+    conversationId: "convId"
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-27,
+    locale: You must reply in Spanish regardless of the language used in the user's input.
+vars_glob:
+  pasajeroCorrecAlmendra:
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    record_orders_ids: "LA0451897ANVY"
+    email: "maniperez008@gmail.com"
+    rut: "409403670"
+    nombrePasajero1: "Almendra Perez"
+    origenDestino: "Santiago-Valdivia"
+    fecha: "26 de noviembre de 2025"
+  pasajeroCorrecIsa:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    rut: "285974895"
+    record_orders_ids: "LA0453751WXUN"
+    email: "NVIVASAN@GMAIL.COM"
+    nombrePasajero: "Isabella Vivas"
+    nombrePasajero1: "Jose Cerquozzi"
+    nombrePasajero2: "Rosa Anzola"
+    nombreCorregido: "Jose Vivas"
+    nombreCorregido2: "Rosa Cerquozzi"
+    nombreHabil: "Jose Manzano"
+    nombreCorregido3: "Jose Manzano Vivas"
+    nombreHabil2: "Ana Perez"
+    nombreCorregido4: "Ana Perez Anzola"
+    nombreMenor: "Isabella Manzano"
+    origenDestino: "Temuco-Santiago"
+    fecha: "05 de diciembre de 2025"
+  pasajeroCorrecAlvaro:
+    entityId: "492ca4dd-b087-4c28-b4b7-b706ceb4a976"
+    rut: "193358586"
+    record_orders_ids: "LA0459426ZAIB"
+    email: "ckouta25@gmail.com"
+    nombrePasajero: "Alvaro Castillo"
+    nombrePasajero2: "Nicolas Castillo Castillo"
+    nombreNoHabil: "Alvaro Castillo"
+    nombreHabil: "Ana Castro"
+    nombreHabilNoCorrec: "Anita Castro"
+    nombreCorregido: "Ana Catrileo"
+    nombreHabil2: "Paola Mella"
+    nombreCorregido2: "Paolita Mella"
+    nombreHabil3: "Pedrito Fernandez"
+    nombreCorregido3: "Pedro Fernandez"
+    nombreMenor: "Pamela Estrella"
+    origenDestino: "Santiago-Concepcion"
+    fecha: "25 de diciembre de 2025"
+  quantity_orders: "1"
+  vuelo: "LA 70"
+  nombreCaracter: "Anaís Ñancul"
+  rutErr: "123456789"
+  nomErr: "matilda houston"
+  emailErr: "error@correo.com"
+  numViajeroFrecuenteErr: "1234567890"
+  codReserErr: "AAAAAA"
+  numCelular: "+56912345678"
+tests:
+  # 001 - CORRECCION NOMBRE - Confirmar datos para continuar corrección de nombre
+  consulta_confirmar_datos_para_correccion_nombre:
+    steps:
+      - El usuario dice quiero corregir nombre en mi reserva
+      - El usuario escribe 'lalalalal'
+      - El usuario escribe nuevamente 'lolololo'
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que está gestionando la corrección y solicita elegir una opción para continuar o consultar otro tema
+      - El agente repite la pregunta para confirmar datos y continuar con el cambio de nombre
+      - El agente indica no pude entenderte, por favor confirma seleccionando una de las opciones para continuar con el cambio de nombre
+      - El agente pregunta si el usuario tiene dudas antes de finalizar el proceso
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero fallido
+    max_turns: 10
+    test_case_key: PACONW-T345
+
+  # 008 - CORRECCION NOMBRE - No se reconoce información usuario no quiere continuar con proceso
+  consulta_no_reconoce_info_no_continua:
+    steps:
+      - El usuario dice necesito cambiar el nombre de un pasajero de mi reserva
+      - El usuario indica un email {{vars_glob.emailErr}} no reconocido
+      - El usuario indica un RUT {{vars_glob.rutErr}} no reconocido
+      - El usuario indica un número de viajero frecuente {{vars_glob.numViajeroFrecuenteErr}} no reconocido
+      - El usuario indica que no tiene información adicional
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el email y solicita más detalles para ayudar con el cambio de nombre
+      - El agente debe indicar que no pudo reconocer el Rut y solicita más detalles para ayudar con el cambio de nombre
+      - El agente debe indicar que no pudo reconocer el numero de viajero frecuente y solicita más detalles para ayudar con el cambio de nombre
+      - El agente indica al cliente si quiere ser transferido o no desea continuar con el proceso
+      - El agente pregunta si el usuario tiene alguna duda sobre el proceso de cambio
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"
+    test_case_key: PACONW-T352
+
+  # 009 - CORRECCION NOMBRE - No se reconoce información usuario quiere ser transferido
+  consulta_no_reconoce_info_transferencia:
+    steps:
+      - El usuario dice necesito cambiar el nombre de un pasajero de mi reserva
+      - El usuario indica un email {{vars_glob.pasajeroCorrecIsa.emailErr}} no reconocido
+      - El usuario indica un RUT {{vars_glob.pasajeroCorrecIsa.rutErr}} no reconocido
+      - El usuario indica un número de viajero frecuente {{vars_glob.pasajeroCorrecIsa.numViajeroFrecuenteErr}} no reconocido
+      - El usuario indica que no tiene información adicional
+      - El usuario indica que desea ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el email y solicita más detalles para ayudar con el cambio de nombre
+      - El agente debe indicar que no pudo reconocer el Rut y solicita más detalles para ayudar con el cambio de nombre
+      - El agente debe indicar que no pudo reconocer el numero de viajero frecuente y solicita más detalles para ayudar con el cambio de nombre
+      - El agente indica al cliente si quiere ser transferido o no desea continuar con el proceso
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"  
+    max_turns: 10
+    test_case_key: PACONW-T353
+
+  # 010 - CORRECCION NOMBRE - No se reconoce Rut usuario no quiere continuar con proceso
+  consulta_no_reconoce_rut_no_continua:
+    steps:
+      - El usuario dice necesito cambiar el nombre de un pasajero de mi reserva
+      - El usuario indica un RUT {{vars_glob.pasajeroCorrecIsa.rutErr}} no reconocido
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el RUT y solicita otro dato para ayudar con el cambio de nombre
+      - El agente pregunta si el usuario tiene alguna duda sobre el proceso de cambio
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"
+    test_case_key: PACONW-T354
+
+  # 011 - CORRECCION NOMBRE - No se reconoce Rut usuario quiere ser transferido
+  consulta_no_reconoce_rut_transferencia:
+    steps:
+      - El usuario dice necesito cambiar el nombre de un pasajero de mi reserva
+      - El usuario indica un RUT {{vars_glob.pasajeroCorrecIsa.rutErr}} no reconocido
+      - El usuario indica que desea ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el RUT y solicita otro dato para ayudar con el cambio de nombre
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"
+    test_case_key: PACONW-T355
+
+  # 012 - CORRECCION NOMBRE - No se reconoce Email usuario no quiere continuar con proceso
+  consulta_no_reconoce_email_no_continua:
+    steps:
+      - El usuario dice necesito cambiar el nombre de un pasajero de mi reserva
+      - El usuario indica un email {{vars_glob.pasajeroCorrecIsa.emailErr}} no reconocido
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el email y solicita otro dato para ayudar con el cambio de nombre
+      - El agente pregunta si el usuario tiene alguna duda sobre el proceso de cambio
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"    
+    test_case_key: PACONW-T356
+
+  # 013 - CORRECCION NOMBRE - No se reconoce Email usuario quiere ser transferido
+  consulta_no_reconoce_email_transferencia:
+    steps:
+      - El usuario dice necesito cambiar el nombre de un pasajero de mi reserva
+      - El usuario indica un email {{vars_glob.pasajeroCorrecIsa.emailErr}} no reconocido
+      - El usuario indica que desea ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el email y solicita otro dato para ayudar con el cambio de nombre
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"
+    test_case_key: PACONW-T357
+
+  # 014 - CORRECCION NOMBRE - No reconoce número pasajero frecuente - No quiere continuar con el proceso
+  consulta_no_reconoce_numero_no_continua:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica un número de pasajero frecuente {{vars_glob.pasajeroCorrecIsa.numeroFrecuenteErr}} no reconocido
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el número de pasajero frecuente y pregunta si desea ser transferido o no continuar
+      - El agente pregunta si el usuario necesita más información sobre el proceso de cambio de nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"
+    test_case_key: PACONW-T358
+
+  # 015 - CORRECCION NOMBRE - No reconoce número pasajero frecuente - Quiere ser transferido
+  consulta_no_reconoce_numero_transferencia:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica un número de pasajero frecuente {{vars_glob.pasajeroCorrecIsa.numeroFrecuenteErr}} no reconocido
+      - El usuario indica que desea ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar que no pudo reconocer el número de pasajero frecuente y pregunta si desea ser transferido o no continuar
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecIsa.entityId }}"
+    test_case_key: PACONW-T359
+
+  # 016 - CORRECCION NOMBRE - Sólo tiene nombre del pasajero de la reserva
+  consulta_solo_nombre_pasajero:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecAlvaro.rut}} del pasajero
+      - El usuario indica solo el nombre {{vars_glob.pasajeroCorrecAlvaro.nombrePasajero2}} del pasajero
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar, podrias proporcionarme codigo de reserva, nombre y apellido de un pasajero para continuar
+      - El agente indica si puede proporcionar mas detalles para ayudar con el cambio de nombre
+      - El agente pregunta si el usuario necesita más información sobre el proceso de cambio de nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"
+    test_case_key: PACONW-T360
+
+  # 017 - CORRECCION NOMBRE - Pasajero no cuenta con información para identificarlo
+  consulta_pasajero_sin_info_identificar:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.rutErr}} del pasajero
+      - El usuario indica que no cuenta con información para identificarlo
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar, podrias proporcionarme codigo de reserva, nombre y apellido de un pasajero para continuar
+      - El agente debe indicar que no cuenta con información suficiente para identificar al pasajero y pregunta si desea continuar o salir del proceso
+      - El agente pregunta si el usuario necesita más información sobre el proceso de cambio de nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 10
+    test_case_key: PACONW-T361
+
+  # 018 - CORRECCION NOMBRE - No se reconoce información para identificar el pasajero - No quiere continuar con el proceso
+  consulta_no_reconoce_info_identificar_no_continua:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.rutErr}} del pasajero
+      - El usuario ingresa nombre {{vars_glob.nomErr}}, codigo reserva {{vars_glob.codReserErr}} y/o fechas de viaje no reconocidos
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar, podrias proporcionarme codigo de reserva, nombre y apellido de un pasajero para continuar
+      - El agente debe indicar que no pudo reconocer la informacion entregada para identificar al pasajero y pregunta si desea continuar o salir del proceso
+      - El agente pregunta si el usuario necesita más información sobre el proceso de cambio de nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 10
+    test_case_key: PACONW-T362
+
+  # 019 - CORRECCION NOMBRE - No se reconoce información para identificar el pasajero - Quiere ser transferido
+  consulta_no_reconoce_info_identificar_transferencia:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.rutErr}} del pasajero
+      - El usuario ingresa nombre {{vars_glob.nomErr}}, codigo reserva {{vars_glob.codReserErr}} y/o fechas de viaje no reconocidos
+      - El usuario indica que desea ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente debe indicar, podrias proporcionarme codigo de reserva, nombre y apellido de un pasajero para continuar
+      - El agente debe indicar que no pudo reconocer la información para identificar al pasajero y pregunta si desea continuar o salir del proceso
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 10
+    test_case_key: PACONW-T363
+
+  # 020 - CORRECCION NOMBRE - Mensaje para error de proceso - No quiere continuar con el proceso
+  consulta_error_proceso_no_continua:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecAlvaro.rut}} del pasajero
+      - El usuario indica código de reserva {{vars_glob.pasajeroCorrecAlvaro.record_orders_ids}} y nombre de pasajero {{vars_glob.pasajeroCorrecAlvaro.nombrePasajero}}
+      - El usuario indica el nombre {{vars_glob.nomErr}} que debe ser corregido
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente solicita código de reserva y nombre de pasajero para continuar
+      - El agente muestra listado de nombres habilitados y no habilitados para cambio sin costo
+      - El agente debe indicar que está presentando dificultades para gestionar el cambio de nombre y entrega opciones para ser transferido o no continuar
+      - El agente pregunta si el usuario necesita más información sobre el proceso de cambio de nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"
+    test_case_key: PACONW-T364
+
+  # 021 - CORRECCION NOMBRE - Mensaje para error de proceso - Quiere ser transferido
+  consulta_error_proceso_transferencia:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecAlvaro.rut}} del pasajero
+      - El usuario indica código de reserva {{vars_glob.pasajeroCorrecAlvaro.record_orders_ids}} y nombre de pasajero {{vars_glob.pasajeroCorrecAlvaro.nombrePasajero}}
+      - El usuario indica el nombre {{vars_glob.nomErr}} que debe ser corregido
+      - El usuario indica que desea ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente solicita código de reserva y nombre de pasajero para continuar
+      - El agente muestra listado de nombres habilitados y no habilitados para cambio sin costo
+      - El agente debe indicar que está presentando dificultades para gestionar el cambio de nombre y entrega opciones para ser transferido o no continuar
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"
+    test_case_key: PACONW-T365
+
+  # 022 - CORRECCION NOMBRE - Pasajero indica nombre no habilitado para cambio - No quiere continuar con el proceso
+  consulta_nombre_no_habilitado_no_continua:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecAlvaro.rut}} del pasajero
+      - El usuario indica código de reserva {{vars_glob.pasajeroCorrecAlvaro.record_orders_ids}} y nombre de pasajero {{vars_glob.pasajeroCorrecAlvaro.nombrePasajero}}
+      - El usuario indica un nombre {{vars_glob.pasajeroCorrecAlvaro.nombreNoHabil}} no habilitado para cambio
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente solicita código de reserva y nombre de pasajero para continuar
+      - El agente muestra listado de nombres habilitados y no habilitados para cambio sin costo
+      - El agente debe indicar que el nombre no está habilitado para cambio sin costo y pregunta si desea continuar o salir del proceso
+      - El agente pregunta si el usuario necesita más información sobre el proceso de cambio de nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"
+    test_case_key: PACONW-T366
+
+  # 023 - CORRECCION NOMBRE - Pasajero indica nombre no habilitado para cambio - Quiere ser transferido
+  consulta_nombre_no_habilitado_transferencia:
+    steps:
+      - El usuario dice quiero corregir nombre de un pasajero en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecAlvaro.rut}} del pasajero
+      - El usuario indica código de reserva {{vars_glob.pasajeroCorrecAlvaro.record_orders_ids}} y nombre de pasajero {{vars_glob.pasajeroCorrecAlvaro.nombrePasajero}}
+      - El usuario indica un nombre {{vars_glob.pasajeroCorrecAlvaro.nombreNoHabil}} no habilitado para cambio sin costo
+      - El usuario indica que desea ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente solicita código de reserva y nombre de pasajero para continuar
+      - El agente muestra listado de nombres habilitados y no habilitados para cambio sin costo
+      - El agente debe indicar que el nombre no está habilitado para cambio sin costo y pregunta si desea continuar o salir del proceso
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"    
+    test_case_key: PACONW-T367
+
+  # 027 - CORRECCION NOMBRE - Pasajero intenta modificar nombre de infante Sin éxito - No desea que le transfieran a agente especialista
+  consulta_nombre_infante_cambio_otro:
+    steps:
+      - El usuario dice quiero corregir nombre de un niño en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecAlvaro.rut}} del pasajero
+      - El usuario indica código de reserva {{vars_glob.pasajeroCorrecAlvaro.record_orders_ids}}
+      - El usuario indica un nombre de infante para cambio {{vars_glob.pasajeroCorrecAlvaro.nombreMenor}}
+      - El usuario indica que no quiere continuar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente solicita código de reserva y/o nombre de pasajero para continuar
+      - El agente muestra listado de nombres habilitados y no habilitados para cambio sin costo
+      - El agente debe indicar que el nombre del infante no puede ser correjido por este medio, indica si quieres ser transferido con un agente especializado para ayudarte con el cambio 
+      - El agente pregunta si el usuario necesita más información sobre el proceso de cambio de nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"  
+    test_case_key: PACONW-T371
+
+  # 028 - CORRECCION NOMBRE - Pasajero intenta modificar nombre de infante Sin éxito - Desea que le transfieran a agente especialista
+  consulta_nombre_infante_cambio_transferencia:
+    steps:
+      - El usuario dice quiero corregir nombre de un niño en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecAlvaro.rut}} del pasajero
+      - El usuario indica código de reserva {{vars_glob.pasajeroCorrecAlvaro.record_orders_ids}}
+      - El usuario indica un nombre de infante para cambio {{vars_glob.pasajeroCorrecAlvaro.nombreMenor}}
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente solicita código de reserva y/o nombre de pasajero para continuar
+      - El agente muestra listado de nombres habilitados y no habilitados para cambio sin costo
+      - El agente debe indicar que el nombre del infante no puede ser correjido por este medio, indica si quieres ser transferido con un agente especializado para ayudarte con el cambio 
+      - El agente confirma transferencia hacia agente especializado
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"  
+    test_case_key: PACONW-T372
+
+  # 030 - CORRECCION NOMBRE - Pasajero desea corregir numero telefono contacto en reserva.
+  consulta_nombre_habilitado_cambio_otro:
+    steps:
+      - El usuario dice quiero corregir el telefono de contacto en mi reserva
+      - El usuario indica el Rut {{vars_glob.pasajeroCorrecIsa.rut}} del pasajero
+      - El usuario indica código de reserva {{vars_glob.pasajeroCorrecIsa.record_orders_ids}} y nombre de pasajero {{vars_glob.pasajeroCorrecIsa.nombrePasajero}}
+      - El usuario indica un número de teléfono para cambio {{vars_glob.numCelular}}
+      - El usuario confirma que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los datos para verificar Rut, email o Numero de pasajero frecuente
+      - El agente solicita código de reserva y nombre de pasajero para continuar
+      - El agente muestra listado de nombres habilitados y no habilitados para cambio sin costo
+      - El agente debe indicar que para realizar cambio de telefono debe ser a traves de una agente especialista y pregunta si quiere ser transferido
+      - El agente agradece la confirmación y pregunta si desea realizar otro cambio de nombre o apellido
+      - El agente debe indicar que <categories> sea "PAX_DATA_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Corregir nombre pasajero
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroCorrecAlvaro.entityId }}"  
+    test_case_key: PACONW-T374

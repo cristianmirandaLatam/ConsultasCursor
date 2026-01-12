@@ -1,0 +1,80 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 9CTOXQ6R0Y
+  bedrock_agent_alias_id: TOTBOITMLB
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-24,
+    locale: You must reply in Spanish regardless of the language used in the user's input.
+tests:
+  # 001 - ACTUALIZAR_PERFIL_CUENTA - Info codigo de reserva y cambio nombre de perfil
+  consulta_info_codigo_reserva_cambio_nombre_perfil:
+    steps:
+      - El usuario pregunta quiero saber mi número de reserva
+      - El usuario indica que desea cambiar el nombre de su perfil
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar las formas de obtener el número de reserva y detallar los pasos para encontrarlo en latam.com o comprobante de compra
+      - El agente debe indicar los documentos requeridos para actualizar el nombre en la cuenta LATAM Pass y detallar el proceso en el centro de ayuda
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Info codigo de reserva y cambio nombre de perfil
+    max_turns: 8
+    test_case_key: PACONW-T386
+
+  # 002 - ACTUALIZAR_PERFIL_CUENTA - Asistencia especial y cambiar el email en su cuenta
+  consulta_asistencia_especial_cambiar_email:
+    steps:
+      - El usuario pregunta necesita asistencia especial
+      - El usuario indica que desea cambiar el email de su cuenta
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe solicitar más información sobre el tipo de asistencia especial requerida
+      - El agente debe explicar cómo cambiar el email en la cuenta LATAM Pass
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Actualizar perfil cuenta
+    max_turns: 8
+    test_case_key: PACONW-T387
+
+  # 003 - CAMBIO - FECHA U HORA - Consulta cómo adelantar un vuelo
+  consulta_como_adelantar_vuelo:
+    steps:
+      - El usuario pregunta cómo hacer para adelantar su vuelo
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los pasos para cambiar la fecha u hora del vuelo en latam.com y detallar el proceso en Mis Viajes
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "DATE_TIME_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Cambio fecha u hora
+    max_turns: 8
+    test_case_key: PACONW-T388
+
+  # 004 - CAMBIO - ERROR - Solicitud cambio de hora de vuelo con error de confirmacion
+  consulta_cambio_hora_vuelo_error_confirmacion:
+    steps:
+      - El usuario pregunta necesita cambiar su horario de vuelo
+      - El usuario indica que el cambio no se pudo realizar
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los pasos para cambiar la hora del vuelo y explicar qué hacer si el cambio no se refleja
+      - El agente debe indicar que puede recibir ayuda inmediata y personalizada a través de un chat con un agente especialista
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia y deriva a encuesta de satisfacción
+      - El agente debe indicar que <categories> sea "CHANGE_ISSUES" y <next_action> sea "transfer"
+    initial_prompt: Cambio hora vuelo error
+    max_turns: 10
+    test_case_key: PACONW-T389
+

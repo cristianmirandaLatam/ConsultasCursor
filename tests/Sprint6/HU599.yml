@@ -1,0 +1,550 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 5P5GKGK6UI
+  bedrock_agent_alias_id: EXDOVO98PC
+  bedrock_prompt_session_attributes:
+    date: "This is today's date 2026-01-06"
+    ICULocale: "You must reply in ES regardless of the language used in the user's input"
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId448"
+vars_glob:
+  vueloTitularCris:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    record_orders_ids: '{"LA0458486AEMD": "2026-02-25"}'
+    current_context: "{\"customer_name\": \"User's name is cristian and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[{\\\"order_id\\\": \\\"la0458486aemd\\\", \\\"number_of_flights\\\": 2, \\\"flight_dates\\\": [\\\"2026-02-25\\\", \\\"2026-03-06\\\"]}, {\\\"order_id\\\": \\\"la0457888veab\\\", \\\"number_of_flights\\\": 3, \\\"flight_dates\\\": [\\\"2026-02-26\\\", \\\"2026-03-05\\\", \\\"2026-03-06\\\"]}]\"}"
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Miranda"
+  variosTramos:
+    vuelo: "LA4405"
+    fecha: "05 de enero de 2026"
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    record_orders_ids: '{"la0458023sczp": "2025-01-05"}'
+    current_context: "{\"customer_name\": \"User's name is jose enrique and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[{\\\"order_id\\\": \\\"la0458023sczp\\\", \\\"number_of_flights\\\": 1, \\\"flight_dates\\\": [\\\"2026-01-05\\\"]}, {\\\"order_id\\\": \\\"la0456288nsef\\\", \\\"number_of_flights\\\": 1, \\\"flight_dates\\\": [\\\"2026-01-07\\\"]}]\"}"
+    quantity_orders: "2"
+    cod_reserva: "ABGLWH"
+    apellido: "Cerquozzi"
+  vueloPasado:
+    vuelo: "LA 4219"
+    fecha: "25 de diciembre de 2025"
+    entityId: "492ca4dd-b087-4c28-b4b7-b706ceb4a976"
+    record_orders_ids: '{"LA0459426ZAIB": "2025-12-25"}'
+    current_context: "{\"customer_name\": \"User's name is alvaro patricio and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[]\"}"
+    quantity_orders: "1"
+    cod_reserva: "RXPRUQ"
+    apellido: "Castillo"
+  vueloTerceroReconocido:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    record_orders_ids: '{"LA0457888VEAB": "2025-01-05"}'
+    quantity_orders: "2"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Acuña"
+  vueloErrores:
+    entityId: "8240c861-d787-4906-a7d7-e06029f83a7a"
+    vuelo: "LA4499"
+    record_orders: "QQQQQQ"
+    quantity_orders: "0"
+    fecha:  "2027-01-05"
+    cod_reserva: "ZZZZ99"
+    cod_reserva2: "AAAAAA"
+    apellido: "ah"
+  vueloTerceroNoReconocido:
+    entityId: "8ce014d9-5358-474c-bad2-a284db16f10f"
+    vuelo: "LA 70"
+    fecha: "17 de octubre de 2027"
+    cod_reserva: "ZZZZ11"
+    apellido: "hh"
+  vueloTerceroReconocidoCaracteres:
+    entityId: "b9090d19-7c0f-48c9-98ed-55c075d8fd2e"
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    cod_reserva: "CGIESL"
+    apellido: "Acuña"
+  pasajeroSinOrdenes:
+    entityId: "f8f6f397-756b-4d05-834f-f689e4512fde"
+    current_context: "{\"customer_name\": \"User's name is miriam and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[]\"}"
+  vueloTemucoSantiago:
+    vuelo: "LA24"
+    fecha: "09 de enero de 2026"
+  vueloSantiagoLima:
+    vuelo: "LA2378"
+    fecha: "09 de enero de 2026"
+  vueloSantiagoMiami:
+    vuelo: "LA542"
+    fecha: "10 de enero de 2026"
+  vueloMadridSaoPaulo:
+    vuelo: "LA8065"
+    fecha: "09 de enero de 2026"
+  vueloNoEncontrado:
+    vuelo: "LA24"
+    fecha: "14 de enero de 2026"
+
+tests:
+  # 01 - Flujo Itinerario de viaje - cliente con reserva válida, vuelo propio
+  "01.consulta_cliente_con_reserva_valida_vuelo_propio":
+    steps:
+      - El usuario dice necesito saber el itinerario de mi próximo vuelo
+      - El usuario responde que no tiene mas información si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe entregar el itinerario
+      - El agente debe preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+      current_context: "{{ vars_glob.vueloTitularCris.current_context }}"
+    test_case_key: PACONW-T565
+
+  # 02 - Flujo Itinerario de viaje - cliente Latam, sin órdenes futuras
+  "02.consulta_cliente_sin_ordenes_futuras":
+    steps:
+      - El usuario dice necesito saber el itinerario de mi próximo vuelo
+      - El usuario responde que no tiene mas información si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica que no hay vuelos futuros y ofrece ir a la página web para más información
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroSinOrdenes.entityId }}"
+      current_context: "{{ vars_glob.pasajeroSinOrdenes.current_context }}"
+    test_case_key: PACONW-T566
+
+  # 03 - Flujo Itinerario de viaje - cliente con reserva válida, vuelo propio pero el vuelo ya ocurrió
+  "03.consulta_cliente_con_reserva_valida_vuelo_ya_ocurrio":
+    steps:
+      - El usuario dice quiero el itinerario de mi vuelo
+      - El usuario ingresa código de reserva {{vars_glob.vueloPasado.cod_reserva}} y apellido {{vars_glob.vueloPasado.apellido}}
+      - El usuario responde que no tiene mas información si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica que no hay vuelos futuros y ofrece ir a la página web para más información
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloPasado.entityId }}"
+      current_context: "{{ vars_glob.vueloPasado.current_context }}"
+    test_case_key: PACONW-T567
+
+  # 04 - Flujo Itinerario de viaje - cliente con reserva válida, itinerario con varios tramos futuros, vuelo propio
+  "04.consulta_cliente_con_reserva_valida_varios_tramos":
+    steps:
+      - El usuario dice necesito el itinerario de mi viaje
+      - El usuario dice que desea ver los otros tramos
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe entregar el tramo futuro más próximo y preguntar si desea ver otros tramos
+      - El agente debe entregar los otros tramos si el usuario lo solicita y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.variosTramos.entityId }}"
+      current_context: "{{ vars_glob.variosTramos.current_context }}"
+    test_case_key: PACONW-T568
+
+  # 05 - Flujo Itinerario de viaje - cliente con reserva válida, varios intentos, error en búsqueda
+  "05.consulta_cliente_con_reserva_valida_varios_intentos_error_busqueda":
+    steps:
+      - El usuario dice necesito el itinerario de mi viaje
+      - El usuario ingresa código de reserva {{vars_glob.vueloPasado.cod_reserva}} y apellido {{vars_glob.vueloPasado.apellido}}
+      - El usuario ingresa número de vuelo {{vars_glob.vueloPasado.vuelo}} y fecha {{vars_glob.vueloPasado.fecha}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica que no encuentra itinerario con los datos proporcionados
+      - El agente solicita datos de reserva
+      - El agente hace la busqueda con los datos proporcionados, sino debe mostrar mensaje de error
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloPasado.entityId }}"
+      current_context: "{{ vars_glob.vueloPasado.current_context }}"
+    test_case_key: PACONW-T569
+
+  # 06 - Flujo Itinerario de viaje - cliente con reserva válida, con sesión activa
+  "06.consulta_cliente_con_reserva_valida_sesion_activa":
+    steps:
+      - El usuario dice necesito el itinerario de mi viaje
+      - El usuario solicita nuevamente el itinerario
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente nuevamente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.variosTramos.entityId }}"
+      current_context: "{{ vars_glob.variosTramos.current_context }}"
+    test_case_key: PACONW-T570
+
+  # 07 - Flujo Itinerario de viaje - cliente Latam, consulta para un tercero
+  "07.consulta_cliente_latam_consulta_tercero":
+    steps:
+      - El usuario dice necesito saber el itinerario de un próximo vuelo
+      - El usuario indica que la consulta es para un tercero
+      - El usuario proporciona datos de reserva {{vars_glob.vueloTerceroReconocido.cod_reserva}} y apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente pregunta para quién es la consulta, titular o tercero
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    test_case_key: PACONW-T571
+
+  # 08 - Flujo Itinerario de viaje - cliente Latam, consulta para un tercero, datos de reserva incorrectos
+  "08.consulta_cliente_latam_tercero_datos_incorrectos":
+    steps:
+      - El usuario dice necesito saber el itinerario de un próximo vuelo
+      - El usuario indica que la consulta es para un tercero
+      - El usuario indica datos de reserva {{vars_glob.vueloErrores.cod_reserva}} y apellido {{vars_glob.vueloErrores.apellido}}
+      - El usuario indica datos reconocidos codigo reserva {{vars_glob.vueloTerceroReconocido.cod_reserva}} y apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente pregunta para quién es la consulta, titular o tercero
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente solicita datos nuevamente
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 12
+    test_case_key: PACONW-T572
+
+  # 09 - Flujo Itinerario de viaje - cliente Latam, consulta para un tercero, sin órdenes futuras
+  "09.consulta_cliente_latam_tercero_sin_ordenes_futuras":
+    steps:
+      - El usuario dice necesito saber el itinerario de un vuelo
+      - El usuario indica que la consulta es para un tercero
+      - El usuario indica datos de reserva {{vars_glob.vueloTerceroNoReconocido.cod_reserva}} y apellido {{vars_glob.vueloTerceroNoReconocido.apellido}}
+      - El usuario indica que no tiene mas informacion si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente pregunta para quién es la consulta, titular o tercero
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente indica que no hay vuelos futuros y ofrece ir a la página web para más información
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    test_case_key: PACONW-T573
+
+  # 10 - Flujo Itinerario de viaje - usuario no reconocido, con reserva válida, código de reserva y apellido
+  "10.consulta_usuario_no_reconocido_reserva_valida_cod_reserva_apellido":
+    steps:
+      - El usuario dice necesito el itinerario de mi viaje,
+      - El usuario entrega datos de reserva {{vars_glob.vueloTerceroReconocido.cod_reserva2}} y apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T574
+
+  # 11 - Flujo Itinerario de viaje - usuario no reconocido, con reserva válida, número de vuelo y fecha
+  "11.consulta_usuario_no_reconocido_reserva_valida_num_vuelo_fecha":
+    steps:
+      - El usuario dice necesito el itinerario de un viaje,
+      - El usuario entrega datos de vuelo {{vars_glob.vueloTemucoSantiago.vuelo}} y fecha {{vars_glob.vueloTemucoSantiago.fecha}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T575
+
+  # 12 - Flujo Itinerario de viaje - usuario no reconocido, sin reserva válida, código de reserva y apellido no reconocidos
+  "12.consulta_usuario_no_reconocido_sin_reserva_valida_cod_reserva_apellido_no_reconocidos":
+    steps:
+      - El usuario dice necesito el itinerario de mi viaje,
+      - El usuario entrega datos de reserva {{vars_glob.vueloTerceroNoReconocido.cod_reserva}} y apellido {{vars_glob.vueloTerceroNoReconocido.apellido}}
+      - El usuario entrega datos de reserva {{vars_glob.vueloTerceroNoReconocido.cod_reserva}} y apellido {{vars_glob.vueloTerceroNoReconocido.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente no reconoce los datos y solicita datos nuevamente
+      - El agente debe indicar que lamentablemente no pudimos encontrar su reserva y debe ofrecer ir a la página web
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T576
+
+  # 13 - Flujo Itinerario de viaje - usuario no reconocido, sin reserva válida, número de vuelo y fecha no reconocidos
+  "13.consulta_usuario_no_reconocido_sin_reserva_valida_num_vuelo_fecha_no_reconocidos":
+    steps:
+      - El usuario dice necesito el itinerario de mi viaje,
+      - El usuario entrega datos de vuelo {{vars_glob.vueloTerceroNoReconocido.vuelo}} y fecha {{vars_glob.vueloTerceroNoReconocido.fecha}}
+      - El usuario entrega datos de vuelo {{vars_glob.vueloTerceroNoReconocido.vuelo}} y fecha {{vars_glob.vueloTerceroNoReconocido.fecha}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente no reconoce los datos y solicita datos nuevamente
+      - El agente debe indicar que lamentablemente no pudimos encontrar su reserva y debe ofrecer ir a la página web
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T577
+
+  # 14 - Flujo Itinerario de viaje - usuario no reconocido con reserva válida, datos con caracteres especiales
+  "14.consulta_usuario_no_reconocido_reserva_valida_caracteres_especiales":
+    steps:
+      - El usuario dice quiero mi itinerario de viaje
+      - El usuario entrega datos de reserva {{vars_glob.vueloTerceroReconocidoCaracteres.cod_reserva}} y apellido {{vars_glob.vueloTerceroReconocidoCaracteres.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente debe entregar correctamente el itinerario asociado y preguntar si tiene más consultas, demostrando que soporta caracteres especiales
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T578
+
+  # 15 - Flujo Itinerario de viaje - usuario no reconocido, sin órdenes futuras
+  "15.consulta_usuario_no_reconocido_sin_ordenes_futuras":
+    steps:
+      - El usuario dice necesito saber el itinerario de mi próximo vuelo
+      - El usuario entrega datos de vuelo {{vars_glob.vueloTerceroNoReconocido.vuelo}} y fecha {{vars_glob.vueloTerceroNoReconocido.fecha}}
+      - El usuario indica que no tiene mas informacion si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente indica que no hay vuelos futuros y ofrece ir a la página web para más información
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroSinOrdenes.entityId }}"
+    test_case_key: PACONW-T579
+
+  # 16 - Flujo Itinerario de viaje - usuario no reconocido con reserva válida, código de reserva incorrecto
+  "16.consulta_usuario_no_reconocido_reserva_valida_cod_reserva_incorrecto":
+    steps:
+      - El usuario dice necesito el itinerario de mi vuelo,
+      - El usuario indica código de reserva {{vars_glob.vueloErrores.cod_reserva}} y apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario indica código de reserva {{vars_glob.vueloTerceroReconocido.cod_reserva}} y apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente solicita datos nuevamente
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T580
+
+  # 17 - Flujo Itinerario de viaje - usuario no reconocido con reserva válida, número de vuelo y fecha incorrectos
+  "17.consulta_usuario_no_reconocido_reserva_valida_num_vuelo_fecha_incorrectos":
+    steps:
+      - El usuario dice necesito el itinerario de un vuelo,
+      - El usuario indica datos de vuelo {{vars_glob.vueloErrores.vuelo}} y fecha {{vars_glob.vueloErrores.fecha}}
+      - El usuario indica datos de vuelo {{vars_glob.vueloMadridSaoPaulo.vuelo}} y fecha {{vars_glob.vueloMadridSaoPaulo.fecha}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente solicita datos nuevamente
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T581
+
+  # 18 - Flujo Itinerario de viaje - usuario no reconocido con reserva válida, solo proporciona código de reserva
+  "18.consulta_usuario_no_reconocido_reserva_valida_solo_cod_reserva":
+    steps:
+      - El usuario dice necesito el itinerario de mi vuelo,
+      - El usuario indica codigo de reserva {{vars_glob.vueloTerceroReconocido.cod_reserva}}
+      - El usuario indica codigo de reserva {{vars_glob.vueloTerceroReconocido.cod_reserva}}
+      - El usuario dice que solo tiene ese dato
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente solicita el apellido del usuario
+      - El agente debe entregar mensaje de no reconocimiento del itinerario y ofrecer ir a la página web
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 14
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T582
+
+  # 19 - Flujo Itinerario de viaje - usuario no reconocido con reserva válida, solo proporciona apellido
+  "19.consulta_usuario_no_reconocido_reserva_valida_solo_apellido":
+    steps:
+      - El usuario dice necesito el itinerario de mi vuelo,
+      - El usuario indica apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario indica apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario dice que solo tiene ese dato
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente solicita el codigo reserva del usuario
+      - El agente debe entregar mensaje de no reconocimiento del itinerario y ofrecer ir a la página web
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 14
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T583
+
+ # 20 - Flujo Itinerario de viaje - Cliente identificado con una sola reserva en la fecha indicada (Español).
+  "20.cliente_una_reserva":
+    steps:
+      - El usuario dice quiero conocer mi codigo de reserva del {{vars_glob.vueloTitularCris.fecha}}
+      - El usuario indica muestrame itinerario de mi reserva
+      - El usuario indica que su apellido es {{vars_glob.vueloTitularCris.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente pregunta quienes viajan en esta solicitud de vuelo e indaga al respecto
+      - El agente debe entregar el itinerario de reserva y preguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+      current_context: "{{ vars_glob.vueloTitularCris.current_context }}"
+    test_case_key: PACONW-T584
+
+  # 21 - Flujo Itinerario de viaje - Cliente identificado con múltiples reservas en la fecha indicada (Español).
+  "21.cliente_multiples_reservas":
+    steps:
+      - El usuario dice quiero saber el codigo de mi reserva del {{vars_glob.vueloTitularCris.fecha}}
+      - El usuario indica muestrame itinerario de la reserva
+      - El usuario indica que su apellido es {{vars_glob.vueloTitularCris.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indaga y muestra las reservas del pasajero
+      - El agente debe mostrar el itinerario de la reserva indicada y perguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+      current_context: "{{ vars_glob.vueloTitularCris.current_context }}"
+    test_case_key: PACONW-T585
+
+  # 22 - Flujo Itinerario de viaje - Cliente identificado con reserva en la fecha indicada (Portugués).
+  "22.cliente_identificado_reserva_pt":
+    steps:
+      - El usuario diz quero saber codigo a minha reserva de {{vars_glob.vueloTitularCris.fecha}}
+      - El usuario indica me mostre o itinerário desta reserva
+      - O usuário indica que seu sobrenome é {{vars_glob.vueloTitularCris.apellido}}
+      - El usuario diz que já não tem mais perguntas
+    expected_results:
+      - El agente indica as reservas do passageiro
+      - El agente deve mostrar o itinerário da reserva indicada e preguntar se tem mais consultas
+      - El agente deve indicar que <categories> seja "RECORD_LOCATOR" e <next_action> seja "information"
+      - El agente deve derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+      current_context: "{{ vars_glob.vueloTitularCris.current_context }}"
+    test_case_key: PACONW-T586
+
+  # 23 - Flujo Itinerario de viaje - Cliente identificado con reserva en la fecha indicada (Inglés).
+  "23.cliente_identificado_reserva_en":
+    steps:
+      - El usuario says I want to know my reservation code for the day {{vars_glob.vueloTitularCris.fecha}}
+      - El usuario indicates Show me the itinerary for this reservation
+      - El usuario indicates that their last name is {{vars_glob.vueloTitularCris.apellido}}
+      - El usuario says that he has no more questions
+    expected_results:
+      - El agente indicates the passenger reservations
+      - El agente must show the itinerary of the indicated reservation and ask if the user has more queries
+      - El agente must indicate that <categories> is "RECORD_LOCATOR" and <next_action> is "information"
+      - El agente must route to survey
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+      current_context: "{{ vars_glob.vueloTitularCris.current_context }}"
+    test_case_key: PACONW-T587
+  
+  # 24 - Flujo Itinerario de viaje - usuario no reconocido, con reserva válida, número de vuelo y fecha (con Escala)
+  "24.consulta_usuario_no_reconocido_reserva_valida_num_vuelo_fecha":
+    steps:
+      - El usuario dice necesito el itinerario de un viaje,
+      - El usuario entrega datos de vuelo {{vars_glob.vueloSantiagoMiami.vuelo}} y fecha {{vars_glob.vueloSantiagoMiami.fecha}}
+      - El usuario indica que quiere ver otros tramos si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente debe entregar el itinerario y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T643
+
+  # 25 - Flujo Itinerario de viaje - usuario no reconocido, con reserva válida, número de vuelo y fecha (fecha sobre 12 dias)
+  "25.consulta_usuario_no_reconocido_reserva_valida_num_vuelo_fecha":
+    steps:
+      - El usuario dice necesito el itinerario de un viaje,
+      - El usuario entrega datos de vuelo {{vars_glob.vueloTerceroReconocido.vuelo}} y fecha {{vars_glob.vueloTerceroReconocido.fecha}}
+      - El usuario dice que no tiene mas informacion si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente debe indicar que solo es posible entregar itinerarios de vuelos dentro de los próximos 12 días y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T644
+
+  # 26 - Flujo Itinerario de viaje - usuario no reconocido, con reserva válida, número de vuelo y fecha (vuelo no encontrado)
+  "26.consulta_usuario_no_reconocido_reserva_valida_num_vuelo_fecha":
+    steps:
+      - El usuario dice necesito el itinerario de un viaje,
+      - El usuario entrega datos de vuelo {{vars_glob.vueloNoEncontrado.vuelo}} y fecha {{vars_glob.vueloNoEncontrado.fecha}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe ofrecer búsqueda por códigos de reserva y apellido o número de vuelo y fecha
+      - El agente debe indicar que no se han encontrado vuelos con esos datos y preguntar si tiene más consultas
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroNoReconocido.entityId }}"
+    test_case_key: PACONW-T645

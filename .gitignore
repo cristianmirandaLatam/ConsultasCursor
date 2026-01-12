@@ -1,0 +1,4 @@
+.env
+.agenteval_runs/
+__pycache__/
+*.pyc

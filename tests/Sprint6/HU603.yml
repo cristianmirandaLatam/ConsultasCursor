@@ -1,0 +1,366 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: YG1LQGQ07L
+  bedrock_agent_alias_id: RDWCWCSG2N
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId448"
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-29,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+  # 01.- Flujo Mascotas - PETC - INFORMACIÓN - Consulta cliente pregunta si puede viajar su perrita sola
+  01.consulta_viajar_perrita_sola:
+    steps:
+      - El usuario pregunta si puede viajar su perrita sola
+      - El usuario indica que la perrita iria en la bodega y es mediana
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que la mascota normalmente viaja con su dueño y detallar las alternativas para transporte sin pasajero acompañante
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "PET_AVIH_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Información viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T588
+ 
+  # 02.- Flujo Mascotas - PETC - SOLICITUD - Consulta cómo añadir a un cachorro a su pasaje
+  02.consulta_añadir_cachorro_pasaje:
+    steps:
+      - El usuario pregunta cómo añadir a un cachorro a su pasaje (perro pequeño)
+      - El usuario indica que la mascota iria en la bodega
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que primero debe comprar el boleto y luego solicitar la inclusión del cachorro, detallando requisitos y proceso
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia 
+      - El agente debe indicar que <categories> sea "PET_AVIH_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T589
+
+  # 03.- Flujo Mascotas - PETC - SOLICITUD - Consulta comprar pasaje de ida con mascota
+  03.consulta_comprar_pasaje_ida_mascota:
+    steps:
+      - El usuario pregunta quiere comprar pasaje de ida con mascota 
+      - El usuario indica que la mascota iria en la cabina y es un gato
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que primero debe verificar disponibilidad de cupo para mascotas y luego comprar el pasaje y contratar el servicio
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T590
+
+  # 04.- Flujo Mascotas - PETC - SOLICITUD - Consulta efectuar pago de viaje con su mascota, ya reservó
+  04.consulta_efectuar_pago_viaje_mascota:
+    steps:
+      - El usuario pregunta quiere efectuar pago de viaje con su mascota ya reservó
+      - El usuario indica que la mascota iria en la cabina y es un perro
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que con el código de reserva y los datos de la mascota debe contactar a LATAM para pagar y registrar el servicio
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T591
+
+  # 05.- Flujo Mascotas - PETC - SOLICITUD - Consulta comprar boleto para su mascota
+  05.consulta_comprar_boleto_mascota:
+    steps:
+      - El usuario pregunta quiere comprar boleto para su mascota
+      - El usuario indica que la mascota iria en la cabina y es un perro
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que primero debe adquirir la reserva de pasajero y luego contratar el servicio de mascota mediante asistencia
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T592
+
+  # 06.- Flujo Mascotas - PETC - SOLICITUD - Consulta comprar transporte en bodega para mascota
+  06.consulta_comprar_transporte_bodega_mascota:
+    steps:
+      - El usuario pregunta quiere comprar transporte en bodega para mascota, es un perro
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que debe comprar el servicio después de tener el pasaje y contactar a LATAM para gestionar el transporte en bodega
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia 
+      - El agente debe indicar que <categories> sea "PET_AVIH_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T593
+
+  # 07.- Flujo Mascotas - PETC - SOLICITUD - Consulta comprar servicio para viajar con mascota en cabina
+  07.consulta_comprar_servicio_mascota_cabina:
+    steps:
+      - El usuario pregunta comprar servicio para viajar con mascota en cabina
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que una vez tenga el pasaje debe solicitar el servicio a LATAM con los datos de la mascota y documentos requeridos
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T594
+
+  # 08.- Flujo Mascotas - PETC - INFORMACIÓN - Consulta tipo de mascotas se pueden llevar en cabina
+  08.consulta_tipo_mascotas_cabina:
+    steps:
+      - El usuario pregunta qué tipo de mascotas puedo llevar en la cabina y cuándo aplica que una mascota sea considerada para cabina
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los tipos de mascotas permitidas y condiciones para ser mascota de cabina
+      - El agente debe indicar que <categories> sea "PET_PETC_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T595
+
+  # 09.- Flujo Mascotas - PETC - INFORMACIÓN - Consulta conejo en la cabina
+  09.consulta_conejo_cabina:
+    steps:
+      - El usuario pregunta si puede llevar su conejo en la cabina
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que no es posible transportar conejos en cabina e indicar las mascotas permitidas
+      - El agente debe indicar que <categories> sea "PET_PETC_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T596
+
+  # 10.- Flujo Mascotas - PETC - INFORMACIÓN - Consulta costo de llevar gato en la cabina
+  10.consulta_costo_gato_cabina:
+    steps:
+      - El usuario pregunta qué costo tiene llevar su gato en la cabina
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar la información asociada al costo de llevar un gato en cabina
+      - El agente debe indicar que <categories> sea "PET_PETC_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T597
+
+  # 11.- Flujo Mascotas - PETC - INFORMACIÓN - Consulta cantidad de mascotas permitidas en la cabina
+  11.consulta_cantidad_mascotas_cabina:
+    steps:
+      - El usuario pregunta cuántas mascotas puede llevar en la cabina
+      - El usuario pregunta cuál es el pasajero permitido
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar la cantidad de mascotas permitidas en cabina
+      - El agente debe indicar el tipo de pasajero permitido para viajar con mascota en cabina
+      - El agente debe indicar que <categories> sea "PET_PETC_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    test_case_key: PACONW-T598
+
+  # 12.- Flujo Mascotas - PETC - INFORMACIÓN - Consulta tipos de razas de mascotas prohibidas en la cabina
+  12.consulta_razas_prohibidas_cabina:
+    steps:
+      - El usuario pregunta cuáles son los tipos de razas de mascotas que están prohibidas para viajar en cabina
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los tipos de razas de mascotas que están prohibidas para viajar en cabina
+      - El agente debe indicar que <categories> sea "PET_PETC_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T599
+
+  # 13.- Flujo Mascotas - AVIH - INFORMACIÓN - Consulta documentación requerida para llevar gato en la bodega
+  13.consulta_documentacion_gato_bodega:
+    steps:
+      - El usuario pregunta qué documentación necesita para viajar con su gato en la bodega
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar la documentación requerida para viajar con el gato en bodega
+      - El agente debe indicar que <categories> sea "PET_AVIH_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T600
+
+  # 14.- Flujo Mascotas - AVIH - INFORMACIÓN - Consulta restricciones para mascotas en la bodega
+  14.consulta_restricciones_mascota_bodega:
+    steps:
+      - El usuario pregunta qué tipo de restricciones tiene para viajar con mascotas en bodega
+      - El usuario pregunta qué tipo de vuelo está permitido
+      - El usuario pregunta cuál es el tiempo de viaje permitido
+      - El usuario pregunta si se permiten conexiones de viaje
+      - El usuario pregunta cuáles son las restricciones de clima
+      - El usuario pregunta cuáles son las restricciones en el peso de la mascota
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar restricciones por vuelo, tiempo, conexiones, clima y peso para viajar con mascotas en bodega
+      - El agente debe indicar el tipo de vuelo permitido
+      - El agente debe indicar el tiempo de viaje permitido
+      - El agente debe indicar si se permiten conexiones de viaje
+      - El agente debe indicar restricciones asociadas al clima
+      - El agente debe indicar restricciones respecto al peso de la mascota
+      - El agente debe indicar que <categories> sea "PET_AVIH_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 14
+    test_case_key: PACONW-T601
+
+  # 15.- Flujo Mascotas - ESAN - INFORMACIÓN - Consulta tipo de mascotas de asistencia emocional en cabina
+  15.consulta_tipo_esan_cabina:
+    steps:
+      - El usuario pregunta qué tipo de mascotas de asistencia emocional puede llevar en la cabina y cuándo aplica que una mascota sea considerada de asistencia emocional
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar las mascotas de asistencia emocional permitidas y condiciones para ser consideradas como tal
+      - El agente debe indicar que <categories> sea "PET_ESAN_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T602
+
+  # 16.- Flujo Mascotas - ESAN - INFORMACIÓN - Consulta requisitos de mascotas de asistencia emocional
+  16.consulta_requisitos_mascotas_esan:
+    steps:
+      - El usuario pregunta qué requisitos debe cumplir su mascota para ser considerada de asistencia emocional
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los requisitos para que una mascota sea considerada de asistencia emocional
+      - El agente debe indicar que <categories> sea "PET_ESAN_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T603
+
+  # 17.- Flujo Mascotas - ESAN - INFORMACIÓN - Consulta edad y peso para gato de asistencia emocional en la cabina
+  17.consulta_edad_peso_gato_esan:
+    steps:
+      - El usuario pregunta cuál es la edad y el peso permitido para llevar a su gato de asistencia emocional en la cabina
+      - El usuario pregunta cuál es el peso permitido para llevar a su gato de asistencia emocional en la cabina
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar la edad permitida para viajar con gato de asistencia emocional en cabina
+      - El agente debe indicar el peso permitido para viajar con gato de asistencia emocional en cabina
+      - El agente debe indicar que <categories> sea "PET_ESAN_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    test_case_key: PACONW-T604
+
+  # 18.- Flujo Mascotas - SVAN - INFORMACIÓN - Consulta tipo de mascotas de servicio en cabina
+  18.consulta_tipo_svan_cabina:
+    steps:
+      - El usuario pregunta qué tipo de mascotas de servicio puede llevar en la cabina y cuándo aplica que una mascota sea considerada de servicio
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar las mascotas de servicio permitidas y condiciones para ser consideradas como tal
+      - El agente debe indicar que <categories> sea "PET_SVAN_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T605
+
+  # 19.- Flujo Mascotas - SVAN - INFORMACIÓN - Consulta requisitos de mascotas de servicio
+  19.consulta_requisitos_mascotas_svan:
+    steps:
+      - El usuario pregunta qué requisitos debe cumplir su mascota para ser considerada de servicio
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los requisitos para que una mascota sea considerada de servicio
+      - El agente debe indicar que <categories> sea "PET_SVAN_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T606
+
+  # 20.- Flujo Mascotas - AVIH - SOLICITUD - Solicitud de reserva gato en la bodega
+  20.solicitud_reserva_gato_bodega:
+    steps:
+      - El usuario pregunta cómo solicitar la reserva de un espacio para su gato en la bodega
+      - El usuario acepta ser transferido a un agente especialista
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los pasos para solicitar la reserva y menciona que debe transferir a un agente especialista
+      - El agente debe confirmar la transferencia
+      - El agente debe indicar que <categories> sea "PET_AVIH_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    test_case_key: PACONW-T607
+
+  # 21.- Flujo Mascotas - ESAN - SOLICITUD - Solicitud de servicio de mascotas de asistencia emocional en cabina
+  21.solicitud_servicio_esan_cabina:
+    steps:
+      - El usuario pregunta cómo solicitar el servicio de mascotas de asistencia emocional en cabina
+      - El usuario pregunta cómo registrar a su mascota
+      - El usuario acepta ser transferido a un agente especialista
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los pasos para solicitar el servicio de mascotas de asistencia emocional
+      - El agente debe indicar los pasos para registrar la mascota y transferir a un agente especialista
+      - El agente debe confirmar la transferencia
+      - El agente debe indicar que <categories> sea "PET_ESAN_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    test_case_key: PACONW-T608
+
+  # 22.- Flujo Mascotas - ESAN - SOLICITUD - Solicitud de reserva gato de asistencia emocional
+  22.solicitud_reserva_gato_esan:
+    steps:
+      - El usuario pregunta cómo solicitar la reserva de un espacio para su gato de asistencia emocional en la cabina
+      - El usuario acepta ser transferido a un agente especialista
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar información asociada a la solicitud y luego transferir a un agente especialista
+      - El agente debe confirmar la transferencia
+      - El agente debe indicar que <categories> sea "PET_ESAN_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    test_case_key: PACONW-T609
+
+  # 23.- Flujo Mascotas - SVAN - SOLICITUD - Solicitud de servicio de mascotas de servicio en cabina
+  23.solicitud_servicio_svan_cabina:
+    steps:
+      - El usuario pregunta cómo solicitar el servicio de mascotas de servicio en cabina
+      - El usuario pregunta cómo registrar a su mascota
+      - El usuario acepta ser transferido a un agente especialista
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los pasos para solicitar el servicio de mascotas de servicio
+      - El agente debe indicar los pasos para registrar la mascota y transferir a un agente especialista
+      - El agente debe confirmar la transferencia
+      - El agente debe indicar que <categories> sea "PET_SVAN_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    test_case_key: PACONW-T610
+
+  # 24.- Flujo Mascotas - SVAN - SOLICITUD - Solicitud de cancelación reserva gato de servicio
+  24.solicitud_cancelacion_reserva_gato_svan:
+    steps:
+      - El usuario pregunta cómo solicitar la cancelación de reserva de un espacio para su gato de servicio en la cabina
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que solo se permite perros de asistencia y ofrece opciones para viajar con un gato
+      - El agente debe indicar que <categories> sea "PET_SVAN_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T611
+

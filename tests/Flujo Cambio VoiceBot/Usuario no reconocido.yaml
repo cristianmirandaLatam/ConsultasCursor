@@ -1,0 +1,27 @@
+evaluator:
+  #model: claude-3_7-us
+  model: claude-3_5
+  aws_region: us-east-1
+  #aws_profile: EBA_PERMISSION
+target:
+  type: bedrock-agent
+  bedrock_agent_id: M92CKGYMPZ
+  bedrock_agent_alias_id: QPDAKEBIIK
+  bedrock_prompt_session_attributes:
+    customerId: Available,
+    date : "This is today's date 2025-06-18,"
+    ICULocale : "You must reply in ES regardless of the language used in the user's input, "
+  bedrock_session_attributes:
+    entityId: " "
+    customerId: '0'
+    originalCountry: Colombia
+    originalLanguage: ES
+    conversationId: 212313123-3132
+tests:
+  Usuario_No_Reconocido:
+    steps:
+    - El usuario indica que quiere realizar un endoso de su pasaje.
+  
+    expected_results:
+    - El agente le informa al usuario informacion general sobre cambios y transferira a Ejecutivo.
+    max_turns: 7

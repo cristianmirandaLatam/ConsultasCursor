@@ -1,0 +1,58 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: LO6UKFHFZP
+  bedrock_agent_alias_id: Y1UT4SVWGL
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-24,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+  # 005 - ARTÍCULOS PERMITIDOS - Solicitud llevar comida en un bolso
+  consulta_llevar_comida_en_bolso:
+    steps:
+      - El usuario pregunta si puede llevar comida en su bolso
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que se puede llevar comida en envase hermético y detallar los alimentos permitidos en cabina y bodega
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "ALLOWED_ITEMS" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Artículos permitidos equipaje
+    max_turns: 8
+    test_case_key: PACONW-T390
+ 
+   # 006 - ARTÍCULOS PERMITIDOS - Consulta llevar la mochila en cabina y después qué cosas es posible llevar dentro
+  consulta_mochila_cabina_items:
+    steps:
+      - El usuario pregunta si puede llevar mochila en cabina y qué cosas puede llevar dentro
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que se puede llevar una mochila en cabina y detallar el listado de items permitidos dentro de la mochila
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "ALLOWED_ITEMS" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Artículos permitidos equipaje
+    max_turns: 8
+    test_case_key: PACONW-T391
+  
+  # 007 - ARTÍCULOS PERMITIDOS - Consulta si es posible pasar el check in con un molde de acero inoxidable de torta
+  consulta_molde_acero_inoxidable_checkin:
+    steps:
+      - El usuario pregunta si es posible pasar el check in con un molde de acero inoxidable de torta
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que se puede transportar un molde de acero inoxidable en cabina o bodega, detallando condiciones y restricciones por seguridad
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "ALLOWED_ITEMS" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Artículos permitidos equipaje
+    max_turns: 8
+    test_case_key: PACONW-T392

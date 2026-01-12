@@ -1,0 +1,109 @@
+evaluator:
+  #model: claude-3_7-us
+  model: claude-3
+  aws_region: us-east-1
+  #aws_profile: EBA_PERMISSION
+target:
+  type: bedrock-agent
+  bedrock_agent_id: M92CKGYMPZ
+  bedrock_agent_alias_id: QPDAKEBIIK
+  bedrock_prompt_session_attributes:
+    customerId: Available,
+    date : "This is today's date 2025-06-18,"
+    ICULocale : "You must reply in ES regardless of the language used in the user's input, "
+  bedrock_session_attributes:
+    entityId: "c0382ab9-9459-4568-b671-49a0102d104a"
+    customerId: '0'
+    originalCountry: Colombia
+    originalLanguage: ES
+    conversationId: 212313123-3132
+tests:
+  Cambio_Vol_Motivo_Grave:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo, menciona que no puede viajar porque se encuentra hospitalizado.
+    expected_results:
+    - El agente le indica que sera tansferido con un ejecutivo para ayudarlo en su solicitud.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_Robo_Documentos:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo porque le acaban de robar sus documentos.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo y este le solicitará documentación asociada a su situación para poderlo ayudar.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_Perdida_Documentos:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo porque indica que perdio sus documentos.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo para ayudarlo con su solicitud.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_Documentos_Vencidos:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo porque su documentación personal se encuentra vencida.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo para ayudarle con su situación.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_Adopcion:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo porque le acaban de avisar que se aprobo la adopción de su hijo y debe realizar los tramites asociados.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo y este le solicitará documentación asociada a su situación para poderlo ayudar.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_Incendio:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo porque se le incendio su casa.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo para ayudarle con su situación.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_Error de compra:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo, porque al momento de comprar su pasaje se equivoco en la fecha de salida de su vuelo.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo para ayudarle con su situación.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_accidente_menor:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo, porque al momento de salir del aeropuerto, se cayo y tuvo que ir a la clinica a sacarse radiografias.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo para ayudarle con su situación.
+    max_turns: 3
+  Cambio_Vol_Motivo_General_enfermedad:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo, amanecio con gastroenteritis y le indicaron reposo.
+  
+    expected_results:
+    - El agente le informa al usuario que lo transferira a un ejecutivo para ayudarle con su situación.
+    max_turns: 3
+Cambio_Vol_Motivo_Cambio_Vacaciones1:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo, por que cambio sus vacaciones para mas adelante, indica que el destino de su viaje es Cusco y fecha de viaje 18-06-2025.
+    - El Usuario confirma su informacion.
+    - El usuario le responde al agente que prefiere realizar el cambio en la pagina de Latam y no con un ejecutivo.
+    - El usuario indica que no tiene mas preguntas.
+    expected_results:
+    - El agente le pide al usuario que confirme su información.
+    - El agente le debe indicar que puede realizar el cambio en la pagina de latam.com o si prefiere realizar el cambio con un ejecutivo.
+    - El agente le pregunta al usuario si tiene mas preguntas.
+    - El agente transfiere a encuesta CSAT.
+    max_turns: 6
+Cambio_Vol_Motivo_Cambio_Vacaciones2:
+    steps:
+    - El usuario indica que necesita cambiar su vuelo
+    - El usuario responde que el destino de su viaje es Cusco y fecha de viaje 18-06-2025.
+    - El Usuario confirma que los datos entregados de fecha y destino de su viaje son correctos.
+    - El usuario le responde al agente que prefiere realizar el cambio en la pagina de Latam y no con un ejecutivo.
+    - El usuario indica que no tiene mas preguntas.
+    expected_results:
+    - El agente le debe pedir la ciudad de destino y fecha del vuelo al usuario.
+    - El agente le pide al usuario que confirme el destino y fecha de su viaje.
+    - Luego de que el usuario confirma la fecha de su viaje, el agente le debe indicar que puede realizar el cambio en la pagina de latam.com o si prefiere realizar el cambio con un ejecutivo.
+    - El agente le pregunta al usuario si tiene mas preguntas.
+    - El agente transfiere a encuesta CSAT.
+    max_turns: 8
+

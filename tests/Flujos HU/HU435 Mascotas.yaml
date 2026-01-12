@@ -1,0 +1,130 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: YG1LQGQ07L
+  bedrock_agent_alias_id: RDWCWCSG2N
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-24,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+  # 008 - PETC - INFORMACIÓN - Consulta cliente pregunta si puede viajar su perrita sola
+  consulta_viajar_perrita_sola:
+    steps:
+      - El usuario pregunta si puede viajar su perrita sola
+      - El usuario indica que la perrita iria en la bodega y es mediana
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que la mascota normalmente viaja con su dueño y detallar las alternativas para transporte sin pasajero acompañante
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "PET_AVIH_INFO" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Información viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T393
+ 
+  # 009 - PETC - SOLICITUD - Consulta cómo añadir a un cachorro a su pasaje
+  consulta_añadir_cachorro_pasaje:
+    steps:
+      - El usuario pregunta cómo añadir a un cachorro a su pasaje
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que primero debe comprar el boleto y luego solicitar la inclusión del cachorro, detallando requisitos y proceso
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia 
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T394
+
+  # 010 - PETC - SOLICITUD - Consulta comprar pasaje de ida con mascota
+  consulta_comprar_pasaje_ida_mascota:
+    steps:
+      - El usuario pregunta quiere comprar pasaje de ida con mascota
+      - El usuario indica que la mascota iria en la cabina
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que primero debe verificar disponibilidad de cupo para mascotas y luego comprar el pasaje y contratar el servicio
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T395
+
+  # 011 - PETC - SOLICITUD - Consulta efectuar pago de viaje con su mascota, ya reservó
+  consulta_efectuar_pago_viaje_mascota:
+    steps:
+      - El usuario pregunta quiere efectuar pago de viaje con su mascota ya reservó
+      - El usuario indica que la mascota iria en la cabina
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que con el código de reserva y los datos de la mascota debe contactar a LATAM para pagar y registrar el servicio
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T396
+
+  # 012 - PETC - SOLICITUD - Consulta comprar boleto para su mascota
+  consulta_comprar_boleto_mascota:
+    steps:
+      - El usuario pregunta quiere comprar boleto para su mascota
+      - El usuario indica que la mascota iria en la cabina
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que primero debe adquirir la reserva de pasajero y luego contratar el servicio de mascota mediante asistencia
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" o "PET_AVIH_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T397
+
+  # 013 - PETC - SOLICITUD - Consulta comprar transporte en bodega para mascota
+  consulta_comprar_transporte_bodega_mascota:
+    steps:
+      - El usuario pregunta quiere comprar transporte en bodega para mascota
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que debe comprar el servicio después de tener el pasaje y contactar a LATAM para gestionar el transporte en bodega
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia 
+      - El agente debe indicar que <categories> sea "PET_AVIH_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T398
+
+  # 014 - PETC - SOLICITUD - Consulta comprar servicio para viajar con mascota en cabina
+  consulta_comprar_servicio_mascota_cabina:
+    steps:
+      - El usuario pregunta comprar servicio para viajar con mascota en cabina
+      - El usuario indica que quiere ser transferido
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que una vez tenga el pasaje debe solicitar el servicio a LATAM con los datos de la mascota y documentos requeridos
+      - El agente pregunta si el usuario quiere ser transferido
+      - El agente confirma transferencia
+      - El agente debe indicar que <categories> sea "PET_PETC_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud viaje mascota
+    max_turns: 8
+    test_case_key: PACONW-T399

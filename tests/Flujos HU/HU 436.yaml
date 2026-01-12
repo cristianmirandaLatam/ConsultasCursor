@@ -1,0 +1,185 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 5P5GKGK6UI
+  bedrock_agent_alias_id: EXDOVO98PC
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-24,
+    locale: You must reply in Spanish regardless of the language used in the user's input.
+tests:
+  # 001 - INFORMACION_DE_VIAJE - Consulta Oficinas Latam en Santiago
+  consulta_oficinas_latam_santiago:
+    steps:
+      - El usuario pregunta por oficina latam en santiago
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ver la ubicación de las oficinas LATAM puedes ingresar al Centro de Ayuda en Latam.com sección Oficinas de atención
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Información oficinas LATAM
+    max_turns: 6
+    test_case_key: PACONW-T400
+
+  # 002 - INFORMACION_DE_VIAJE - Consulta horario call center Peru
+  consulta_horario_call_center_peru:
+    steps:
+      - El usuario pregunta hasta qué hora trabaja el call center de perú
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para conocer el horario y ubicación de oficinas de atención ingrese a la web opción Centro de Ayuda Oficinas de atención
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Información call center LATAM
+    max_turns: 6
+    test_case_key: PACONW-T401
+
+  # 003 - INFORMACION_DE_VIAJE - Consulta contacto de Latam estando en el extranjero
+  consulta_contacto_latam_extranjero:
+    steps:
+      - El usuario pregunta cómo puedo ponerme en contacto con LATAM estando en el extranjero
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede contactarnos a través de canales digitales sin llamadas internacionales y recomienda usar la web LATAM.com Centro de Ayuda
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Información contacto LATAM extranjero
+    max_turns: 6
+    test_case_key: PACONW-T402
+
+  # 004 - INFORMACION_DE_VIAJE - Consulta ubicacion agencias en Lima
+  consulta_ubicacion_agencias_lima:
+    steps:
+      - El usuario pregunta donde quedan las agencias en Lima
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ver la ubicación de oficinas LATAM puedes ingresar al Centro de Ayuda en Latam.com sección Oficinas de atención y detallar países sin oficinas de venta
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Información agencias LATAM Lima
+    max_turns: 6
+    test_case_key: PACONW-T403
+
+  # 005 - INFORMACION_DE_VIAJE - Consulta ubicacion agencias en Bogota
+  consulta_ubicacion_agencias_bogota:
+    steps:
+      - El usuario pregunta dónde queda la oficina de servicio al cliente en bogotá
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ver la ubicación de oficinas LATAM puedes ingresar al Centro de Ayuda en Latam.com sección Oficinas de atención y detallar países sin oficinas de venta
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Información agencias LATAM Bogotá
+    max_turns: 6
+    test_case_key: PACONW-T404
+
+  # 006 - INFORMACION_DE_VIAJE - Consulta direccion oficinas en Santiago
+  consulta_direccion_oficinas_santiago:
+    steps:
+      - El usuario pregunta cuál es la dirección de oficinas LATAM en Santiago
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede revisar la dirección y oficinas disponibles en el sitio web Centro de Ayuda Oficinas de atención seleccionando zona y país
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Información oficinas LATAM Santiago
+    max_turns: 6
+    test_case_key: PACONW-T405
+
+  # 007 - INFORMACION_DE_VIAJE - Consulta telefone ou loja fisica que eu poderia falar
+  consulta_telefone_loja_fisica:
+    steps:
+      - El usuario pregunta teria algum telefone ou loja fisica que eu poderia falar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para encontrar la ubicación de agencias LATAM puede acceder al Centro de Ayuda Latam.com sección Escritorios de atención y detallar países sin oficinas físicas
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Informações contato LATAM Brasil
+    max_turns: 6
+    bedrock_session_attributes:
+      originalCountry: Brasil
+      originalLanguage: Portugués
+    test_case_key: PACONW-T406
+
+  # 008 - INFORMACION_DE_VIAJE - Consulta localizazao de uma agencia fisica da latam  - no Chile tem
+  consulta_localizacao_agencia_chile:
+    steps:
+      - El usuario pregunta pode me envia localizazao de uma agencia fisica da latam por favor no Chile tem
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para encontrar la ubicación de agencias LATAM puede acceder al Centro de Ayuda Latam.com sección Escritorios de atención y detallar países sin oficinas físicas
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Informações Agências LATAM Chile
+    max_turns: 6
+    bedrock_session_attributes:
+      originalCountry: Brasil
+      originalLanguage: Portugués
+    test_case_key: PACONW-T407
+
+  # 009 - INFORMACION_DE_VIAJE - Consulta informações de contato com a LATAM
+  consulta_informacoes_contato_latam:
+    steps:
+      - El usuario pregunta quais informações de contato eu posso usar para entrar em contato com a LATAM
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede encontrar toda la información de contacto de LATAM en el Centro de Ayuda Latam.com y detallar números de teléfono y oficinas
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Informações contato LATAM Brasil
+    max_turns: 6
+    bedrock_session_attributes:
+      originalCountry: Brasil
+      originalLanguage: Portugués
+    test_case_key: PACONW-T408
+
+  # 010 - INFORMACION_DE_VIAJE - Consulta informações de endereço da LATAM em SP
+  consulta_informacoes_endereco_latam_sp:
+    steps:
+      - El usuario pregunta outra coisa a onde tem loja da latam em SP qual shopping qual endereço
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para encontrar el endereço de las tiendas y oficinas de LATAM en São Paulo puede acceder al Centro de Ayuda Latam.com sección Escritorios de atención y detallar información actualizada
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Informações Escritórios LATAM São Paulo
+    max_turns: 6
+    bedrock_session_attributes:
+      originalCountry: Brasil
+      originalLanguage: Portugués
+    test_case_key: PACONW-T409
+
+  # 011 - INFORMACION_DE_VIAJE - Consulta informações de Telefones LATAM
+  consulta_informacoes_telefones_latam:
+    steps:
+      - El usuario pregunta telefones latam
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede encontrar todos los números de teléfono del Contact Center LATAM por país en el Centro de Ayuda Latam.com opción Números de teléfono
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CONTACT_INFORMATION" y <next_action> sea "information"
+      - El agente transfiere a encuesta survey
+    initial_prompt: Informações telefones LATAM
+    max_turns: 6
+    bedrock_session_attributes:
+      originalCountry: Brasil
+      originalLanguage: Portugués
+    test_case_key: PACONW-T410

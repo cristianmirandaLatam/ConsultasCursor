@@ -1,0 +1,228 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: QQLL5EYZEV
+  bedrock_agent_alias_id: RBRKXNDKQN
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-12-02,
+    locale: You must reply in Spanish regardless of the language used in the user's input.
+vars_glob:
+  pasajeroCorrecAlmendra:
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    record_orders_ids: "LA0451897ANVY"
+    email: "maniperez008@gmail.com"
+  tarjetaVisa: "4051880011000010"
+  tarjetaMastercard: "5105105105105100"
+  tarjetaAmericanExpress: "378282246310005"
+  tarjetaDinersClub: "30569309025904"
+  tarjetaDiscover: "6011000990139424"
+  tarjetaAmex: "378734493671000"
+tests:
+  # 001 - ENMASCARAMIENTO - Consulta comprar un pasaje con mi TC
+  consulta_comprar_pasaje_tc:
+    steps:
+      - El usuario pregunta quiero comprar un pasaje con mi tarjeta de crédito {{vars_glob.tarjetaVisa}}
+      - El usuario responde a las preguntas del agente si las hay
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar quienes viajan en esta solicitud de vuelo e indagar al respecto
+      - El agente debe indicar que está gestionando la reserva y solicitar que elija una opción para continuar con el proceso
+      - El agente debe indicar que puede realizar la compra directamente en la página web de LATAM y preguntar si hay algo más en lo que desee ayuda
+      - El agente debe indicar que <categories> sea "PURCHASE_STANDARD" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Compra con tarjeta de crédito
+    max_turns: 7
+    test_case_key: PACONW-T435
+
+  # 002 - ENMASCARAMIENTO - Consulta devolución de compra realizada con la TC
+  consulta_devolucion_compra_tc:
+    steps:
+      - El usuario indica que desea la devolución de la compra realizada con su tarjeta de crédito {{vars_glob.tarjetaMastercard}}
+      - El usuario responde a las preguntas del agente si las hay
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe solicitar si corresponde a una devolución de un boleto ya comprado u otra circunstancia
+      - El agente debe indicar que está gestionando la solicitud de devolución y solicitar que elija una opción para continuar
+      - El agente debe explicar el proceso de devolución en la web de LATAM y preguntar si necesita ayuda con la devolución
+      - El agente debe indicar que <categories> sea "REFUND_REQUEST" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud de devolución con tarjeta
+    max_turns: 7
+    test_case_key: PACONW-T436
+
+  # 003 - ENMASCARAMIENTO - Consulta cambio de vuelo adquirido con mi TC
+  consulta_cambio_vuelo_tc:
+    steps:
+      - El usuario indica que desea realizar un cambio de vuelo adquirido con su tarjeta de crédito {{vars_glob.tarjetaMastercard}}
+      - El usuario responde a las preguntas del agente sobre el tipo de cambio que desea realizar
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede ayudar con el cambio y preguntar qué tipo de cambio desea realizar
+      - El agente debe indicar que está gestionando la solicitud de cambio y solicitar que elija una opción para continuar
+      - El agente debe explicar los pasos para realizar el cambio en la web de LATAM y preguntar si hay algo más en lo que pueda ayudar
+      - El agente debe indicar que <categories> sea "DATE_TIME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Cambio de vuelo con tarjeta
+    max_turns: 7
+    test_case_key: PACONW-T437
+
+  # 004 - ENMASCARAMIENTO - Consulta información de vuelo comprado con mi TC
+  consulta_informacion_vuelo_tc:
+    steps:
+      - El usuario pregunta por información de su vuelo comprado con su tarjeta de crédito {{vars_glob.tarjetaAmex}}
+      - El usuario confirma si la información es para él y entrega los datos necesarios
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe solicitar confirmación si la información es para el usuario y pedir los datos necesarios para ubicar la reserva
+      - El agente debe explicar las formas de consultar la información de vuelo y preguntar si hay algo más en lo que pueda ayudar
+      - El agente debe indicar que <categories> sea "FLIGHT_ITINERARY" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Información de vuelo con tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T438
+
+  # 005 - ENMASCARAMIENTO - Consulta comprar asiento de vuelo y pagar con TC
+  consulta_compra_asiento_tc:
+    steps:
+      - El usuario indica que quiere comprar su asiento de vuelo y pagarlo con su tarjeta de crédito {{vars_glob.tarjetaVisa}}
+      - El usuario responde a las preguntas del agente si las hay
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede comprar el asiento durante la compra del boleto o después en Mis Viajes y preguntar si tiene otra pregunta sobre la compra de asientos
+      - El agente debe explicar las formas de consultar la información de vuelo y preguntar si hay algo más en lo que pueda ayudar
+      - El agente debe indicar que <categories> sea "SEAT_PURCHASE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Compra de asiento con tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T439
+
+  # 006 - ENMASCARAMIENTO - Consulta compra de equipaje con TC
+  consulta_compra_equipaje_tc:
+    steps:
+      - El usuario indica que quiere comprar equipaje adicional y pagar con su tarjeta de crédito {{vars_glob.tarjetaVisa}}
+      - El usuario responde a las preguntas del agente si las hay
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los pasos para comprar equipaje adicional en Mis Viajes y explicar que el pago se realiza con tarjeta de crédito
+      - El agente debe indicar la disponibilidad de agregar equipaje hasta 6 horas antes del vuelo y preguntar si hay algo más en lo que pueda ayudar
+      - El agente debe indicar que <categories> sea "SEAT_PURCHASE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Compra de equipaje con tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T440
+
+  # 007 - ENMASCARAMIENTO - Consulta actualizar datos y TC asociada
+  consulta_actualizar_datos_tc:
+    steps:
+      - El usuario indica que quiere actualizar sus datos y la tarjeta de crédito asociada {{vars_glob.tarjetaVisa}}
+      - El usuario responde a las preguntas del agente sobre si tiene acceso a su cuenta LATAM
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe preguntar si la actualización es para el perfil LATAM Pass o para una reserva y solicitar la información necesaria
+      - El agente debe indicar los pasos para modificar datos en la cuenta LATAM y opciones sin acceso a la cuenta, incluyendo documentación requerida
+      - El agente pregunta si el usuario tiene alguna duda o consulta
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Actualización de datos y método de pago
+    max_turns: 6
+    test_case_key: PACONW-T441
+
+  # 008 - ENMASCARAMIENTO - Consulta pagar menú especial con TC
+  consulta_pagar_menu_especial_tc:
+    steps:
+      - El usuario pregunta cómo pagar un menú especial en su viaje con su tarjeta de crédito {{vars_glob.tarjetaAmex}}
+      - El usuario responde a las preguntas del agente sobre el tipo de menú y si tiene reserva confirmada
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe solicitar el tipo de menú especial y si ya tiene una reserva para guiar la gestión
+      - El agente debe proponer transferir con un especialista para gestionar detalles específicos de la reserva cuando corresponda
+      - El agente pregunta si el usuario tiene alguna duda o consulta
+      - El agente debe indicar que <categories> sea "MEAL_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Solicitud de menú especial con tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T442
+
+  # 009 - ENMASCARAMIENTO - Consulta pagar reserva de mascota en bodega con TC
+  consulta_reserva_mascota_tc:
+    steps:
+      - El usuario indica que desea pagar la reserva para llevar su mascota en bodega con su tarjeta de crédito {{vars_glob.tarjetaAmex}}
+      - El usuario responde a las preguntas del agente si solicita más detalles sobre la mascota
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe solicitar mayor detalle para guiar sobre transporte de mascotas
+      - El agente debe proponer transferir con un especialista para gestionar detalles específicos cuando sea necesario
+      - El agente pregunta si el usuario tiene alguna duda o consulta
+      - El agente debe indicar que <categories> sea "PET_AVIH_REQUEST" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Reserva mascota con tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T443
+
+  # 010 - ENMASCARAMIENTO - Consulta menores viajan solos y pago con TC
+  consulta_menores_viaje_pago_tc:
+    steps:
+      - El usuario indica que quiere que sus hijos viajen solos y pagar el costo con su tarjeta de crédito {{vars_glob.tarjetaAmex}}
+      - El usuario responde a las preguntas del agente sobre edades y condiciones del servicio
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe solicitar detalles para ayudar con transporte de menores y explicar condiciones y alternativas
+      - El agente debe indicar las condiciones para menores no acompañados y preguntar si necesita otra consulta
+      - El agente debe indicar que <categories> sea "MINORS_INFORMATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Menores no acompañados y pago con tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T444
+
+  # 011 - ENMASCARAMIENTO - Consulta reclamo por no recibir cargo en TC
+  consulta_reclamo_cargo_tc:
+    steps:
+      - El usuario indica que quiere levantar un reclamo porque no ha recibido el cargo en su tarjeta {{vars_glob.tarjetaMastercard}}
+      - El usuario responde a las preguntas del agente si solicita información adicional sobre la reserva o el cargo
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe solicitar mayor detalle para gestionar el reclamo y explicar el proceso para presentar el reclamo
+      - El agente debe indicar instrucciones para presentar el reclamo y preguntar si tiene alguna otra duda sobre cómo proceder
+      - El agente debe indicar que <categories> sea "CLAIM_CREATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Reclamo por cargo en tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T445
+
+  # 012 - ENMASCARAMIENTO - Consulta abrir Latam Wallet y asociar TC
+  consulta_apertura_latam_wallet_tc:
+    steps:
+      - El usuario indica que quiere abrir una cuenta Latam Wallet y asociar su tarjeta {{vars_glob.tarjetaVisa}}
+      - El usuario responde a las preguntas del agente sobre su cuenta y preferencias
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar los pasos para asociar una tarjeta en LATAM Wallet y explicar limitaciones como cuotas y uso en proceso de compra
+      - El agente debe guiar sobre cómo acceder a LATAM Wallet y asociar la tarjeta y preguntar si tiene alguna otra duda
+      - El agente debe indicar que <categories> sea "LATAM_WALLET_INFORMATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Apertura LATAM Wallet y asociación de tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T446
+
+  # 013 - ENMASCARAMIENTO - Consulta pago de paquete turístico con TC
+  consulta_pago_paquete_turistico_tc:
+    steps:
+      - El usuario pregunta si puede pagar un paquete turístico con su tarjeta de crédito {{vars_glob.tarjetaVisa}}
+      - El usuario responde a las preguntas del agente sobre detalles del paquete turístico
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede ayudar con información para pago de paquete turístico y solicitar mayor detalle sobre la reserva
+      - El agente debe guiar sobre LATAM Travel y pago con tarjeta y preguntar si tiene alguna otra duda o consulta
+      - El agente debe indicar que <categories> sea "HOTEL_PURCHASE_REQUEST" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    initial_prompt: Pago de paquete turístico con tarjeta
+    max_turns: 6
+    test_case_key: PACONW-T447

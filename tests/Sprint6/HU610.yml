@@ -1,0 +1,87 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: QQLL5EYZEV
+  bedrock_agent_alias_id: RBRKXNDKQN
+  bedrock_session_attributes:
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId448"
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2026-01-06,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+  # 03. Migración Envío Cuv - Quiero que me envíen mi boleto al correo
+  03.consulta_envio_boleta_correo:
+    steps:
+      - El usuario indica que quiere que le envíen su boleto al correo
+      - El usuario dice que necesita su comprobante de compra si el agente pregunta
+      - El usuario dice que no tiene más preguntas
+    expected_results:
+      - El agente debe responder diferentes opciones para obtención del comprobante de compra. 
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "RECEIPT_REQUEST" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T669
+
+  # 05. Migración Envío Cuv - Necesito mi boleto o comprobante de compra de vuelo
+  05.consulta_envio_boleta:
+    steps:
+      - El usuario indica que necesita su boleto o comprobante de compra de vuelo
+      - El usuario dice que no tiene más preguntas
+    expected_results:
+      - El agente debe responder diferentes opciones para obtención del comprobante de compra. 
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "RECEIPT_REQUEST" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T670
+
+  # 12. Migración Envío Cuv - Necesito mi comprobante de compra
+  12.consulta_envio_comprobante:
+    steps:
+      - El usuario indica que necesita su comprobante de compra de vuelo
+      - El usuario dice que no tiene más preguntas
+    expected_results:
+      - El agente debe responder diferentes opciones para obtención del comprobante de compra. 
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "RECEIPT_REQUEST" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T671
+
+  # 16. Migración Envío Cuv - Hasta cuando puedo solicitar la factura de compra?
+  16.consulta_factura_compra:
+    steps:
+      - El usuario indica que hasta cuando puede solicitar la factura de compra
+      - El usuario dice que no tiene más preguntas
+    expected_results:
+      - El agente debe responder diferentes opciones para obtención del comprobante de compra. 
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "RECEIPT_REQUEST" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T672
+ 
+   # 17. Migración Envío Cuv- Puedo solicitar la factura de compra en otro momento?
+  17.consulta_factura_compra_otro_momento:
+    steps:
+      - El usuario indica si puede solicitar la factura de compra en otro momento
+      - El usuario dice que no tiene más preguntas
+    expected_results:
+      - El agente debe responder diferentes opciones para obtención del comprobante de compra. 
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "RECEIPT_REQUEST" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T673
+

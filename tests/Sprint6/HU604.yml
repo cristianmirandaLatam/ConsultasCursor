@@ -1,0 +1,182 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: MXNLPD9F1D
+  bedrock_agent_alias_id: LERZJGDR1Y
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId448"
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2026-01-06,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+  # 01 - Migración Reclamos - ¿Quiero presentar un reclamo?
+  01.consulta_presentar_reclamo:
+    steps:
+      - El usuario indica que quiere presentar un reclamo
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar para presentar tu reclamo, puedes hacerlo a través de nuestro sitio web de manera fácil y rápida junto con los pasos y link
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_CREATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T646
+
+  # 02 - Migración Reclamos - ¿Cómo puedo presentar un reclamo por problemas en el aeropuerto?
+  02.consulta_reclamo_aeropuerto:
+    steps:
+      - El usuario pregunta cómo puede presentar un reclamo por problemas en el aeropuerto
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que puede presentar su reclamo a través del sitio web indicando pasos y link, recibirá respuesta de un agente especializado
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_CREATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T647
+
+  # 03 - Migración Reclamos - ¿Dónde puedo presentar un reclamo por la atención recibida a bordo del avión?
+  03.consulta_reclamo_atencion_a_bordo:
+    steps:
+      - El usuario pregunta dónde puede presentar un reclamo por la atención recibida a bordo del avión
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que debe presentar el reclamo en el sitio web con pasos y link, recibirá respuesta de un agente especializado
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_CREATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T648
+
+  # 04 - Migración Reclamos - ¿Cómo hago un reclamo por la atención recibida en el Contact Center?
+  04.consulta_reclamo_contact_center:
+    steps:
+      - El usuario pregunta cómo hacer un reclamo por la atención recibida en el Contact Center
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que el reclamo por Contact Center debe presentarse en el sitio web con los pasos y link, y recibirá respuesta de un agente especializado
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_CREATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T649
+
+  # 05 - Migración Reclamos - ¿Puedo presentar un reclamo por la atención en una oficina de ventas?
+  05.consulta_reclamo_oficina_ventas:
+    steps:
+      - El usuario pregunta si puede presentar un reclamo por la atención en una oficina de ventas
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que debe presentar el reclamo en el sitio web de LATAM, incluyendo pasos y link, y recibirá respuesta de un agente especializado
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_CREATION" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T650
+
+  # 06 - Migración Reclamos - ¿Qué sucede con la queja que presenté la semana pasada?
+  06.estado_queja_semana_pasada:
+    steps:
+      - El usuario pregunta qué sucede con la queja que presentó la semana pasada
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe entregar un link donde el usuario podrá visualizar el estado de su reclamo y ofrece ayuda si tiene dificultades
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_STATUS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T651
+
+  # 07 - Migración Reclamos - ¿Qué sucede con mi caso de atención al cliente?
+  07.estado_caso_atencion_cliente:
+    steps:
+      - El usuario pregunta qué sucede con su caso de atención al cliente
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe enviar un link para visualizar el estado de su reclamo y ofrece ayuda si tiene problemas
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_STATUS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T652
+
+  # 08 - Migración Reclamos - ¿Hay novedades sobre mi queja por pérdida de equipaje?
+  08.novedades_queja_equipaje:
+    steps:
+      - El usuario pregunta si hay novedades sobre su queja por pérdida de equipaje
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe entregar un link donde el usuario podrá ver el estado del reclamo, ofrece ayuda si tiene problemas
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_STATUS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T653
+
+  # 09 - Migración Reclamos - ¿Cómo puedo saber el estado de mi reclamo?
+  09.estado_reclamo:
+    steps:
+      - El usuario pregunta cómo puede saber el estado de su reclamo
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe enviar un link para revisar el estado del reclamo de forma fácil y rápida y ofrece ayuda si tiene dificultades
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_STATUS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T654
+
+  # 10 - Migración Reclamos - Presenté un reclamo y no he recibido respuesta, ¿qué puedo hacer?
+  10.reclamo_sin_respuesta:
+    steps:
+      - El usuario indica que presentó un reclamo y no ha recibido respuesta y pregunta qué puede hacer
+      - El usuario pregunta cuál es el peso permitido para llevar a su gato de asistencia emocional en la cabina
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar cómo hacer seguimiento y visualizar el estado de su reclamo y ofrece ayuda si tiene dificultades
+      - El agente debe responder sobre el peso permitido para gatos de asistencia emocional en cabina
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_STATUS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 8
+    test_case_key: PACONW-T655
+
+  # 11 - Migración Reclamos - ¿Puedo modificar o agregar información a un reclamo que ya presenté?
+  11.modificar_agregar_informacion_reclamo:
+    steps:
+      - El usuario pregunta si puede modificar o agregar información a un reclamo que ya presentó
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar cómo modificar o agregar información y dónde revisar el estado del reclamo, ofrece ayuda si es necesario
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_STATUS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T656
+
+  # 12 - Migración Reclamos - ¿Qué hago si mi reclamo fue cerrado pero no estoy satisfecho con la respuesta?
+  12.reclamo_cerrado_no_satisfecho:
+    steps:
+      - El usuario pregunta qué hacer si su reclamo fue cerrado pero no está satisfecho con la respuesta
+      - El usuario responde que quiere apelar o revisar su reclamo si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar cómo revisar y apelar, o volver a ingresar un reclamo explicando los pasos, ofrece ayuda si es necesario
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "CLAIM_STATUS" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 4
+    test_case_key: PACONW-T657
+
+ 
+

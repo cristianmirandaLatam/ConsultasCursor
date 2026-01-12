@@ -1,0 +1,270 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 5P5GKGK6UI
+  bedrock_agent_alias_id: EXDOVO98PC
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-12-18,
+    # ICULocale: You must reply in Spanish regardless of the language used in the user's input.
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId0"
+vars_glob:
+  vueloReconocido:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    current_context: "{\"customer_name\": \"User's name is cristian and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[{\\\"order_id\\\": \\\"la0458486aemd\\\", \\\"number_of_flights\\\": 2, \\\"flight_dates\\\": [\\\"2026-02-25\\\", \\\"2026-03-06\\\"]}, {\\\"order_id\\\": \\\"la0457888veab\\\", \\\"number_of_flights\\\": 3, \\\"flight_dates\\\": [\\\"2026-02-26\\\", \\\"2026-03-05\\\", \\\"2026-03-06\\\"]}]\"}"
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Miranda"
+  variasReservas:
+    vuelo: "LA4405"
+    fecha: "05 de enero de 2026"
+    fecha2: "07 de enero de 2026"
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    record_orders_ids: '{"la0458023sczp": "2025-01-05"}'
+    current_context: "{\"customer_name\": \"User's name is jose enrique and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[{\\\"order_id\\\": \\\"la0458023sczp\\\", \\\"number_of_flights\\\": 1, \\\"flight_dates\\\": [\\\"2026-01-05\\\"]}, {\\\"order_id\\\": \\\"la0456288nsef\\\", \\\"number_of_flights\\\": 1, \\\"flight_dates\\\": [\\\"2026-01-07\\\"]}]\"}"
+    quantity_orders: "1"
+    cod_reserva: "ABGLWH"
+    cod_reserva2: "YRYGKM"
+    apellido: "Cerquozzi"
+  vueloTerceroReconocido:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    fecha3: "06 de marzo de 2026"
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    record_orders_ids: '{"LA0458486AEMD": "2025-02-25"}'
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Acuña"
+  pasajeroSinOrdenes:
+    entityId: "f8f6f397-756b-4d05-834f-f689e4512fde"
+    current_context: "{\"customer_name\": \"User's name is miriam and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[]\"}"
+  fecha: "25 de febrero de 2026"
+  rut: "12.345.678-9"
+
+tests:
+  # 01 - IDENTIFICACION RESERVA - Cliente identificado con una sola reserva en la fecha indicada (Español).
+  "cliente_una_reserva":
+    steps:
+      - El usuario dice quiero conocer mi codigo de reserva del {{vars_glob.vueloReconocido.fecha}}
+      - El usuario indica muestrame itinerario de mi reserva
+      - El usuario indica que su apellido es {{vars_glob.vueloReconocido.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente pregunta quienes viajan en esta solicitud de vuelo e indaga al respecto
+      - El agente debe entregar el itinerario de reserva y preguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloReconocido.entityId }}"
+      current_context: "{{ vars_glob.vueloReconocido.current_context }}"
+    test_case_key: PACONW-T501
+
+  # 02 - IDENTIFICACION RESERVA - Cliente identificado con múltiples reservas en la fecha indicada (Español).
+  "cliente_multiples_reservas":
+    steps:
+      - El usuario dice quiero saber el codigo de mi reserva del {{vars_glob.vueloReconocido.fecha}}
+      - El usuario indica muestrame itinerario de la reserva
+      - El usuario indica que su apellido es {{vars_glob.vueloReconocido.apellido}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indaga y muestra las reservas del pasajero
+      - El agente debe mostrar el itinerario de la reserva indicada y perguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloReconocido.entityId }}"
+      current_context: "{{ vars_glob.vueloReconocido.current_context }}"
+    test_case_key: PACONW-T502
+
+  # 03 - IDENTIFICACION RESERVA - Cliente identificado con reserva en la fecha indicada (Portugués).
+  "cliente_identificado_reserva_pt":
+    steps:
+      - El usuario diz quero saber codigo a minha reserva de {{vars_glob.vueloReconocido.fecha}}
+      - El usuario indica me mostre o itinerário desta reserva
+      - O usuário indica que seu sobrenome é {{vars_glob.vueloReconocido.apellido}}
+      - El usuario diz que já não tem mais perguntas
+    expected_results:
+      - El agente indica as reservas do passageiro
+      - El agente deve mostrar o itinerário da reserva indicada e preguntar se tem mais consultas
+      - El agente deve indicar que <categories> seja "RECORD_LOCATOR" e <next_action> seja "information"
+      - El agente deve derivar a encuesta (survey)
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloReconocido.entityId }}"
+      current_context: "{{ vars_glob.vueloReconocido.current_context }}"
+    test_case_key: PACONW-T503
+
+  # 04 - IDENTIFICACION RESERVA - Cliente identificado con reserva en la fecha indicada (Inglés).
+  "cliente_identificado_reserva_en":
+    steps:
+      - El usuario says I want to know my reservation code for the day {{vars_glob.vueloReconocido.fecha}}
+      - El usuario indicates Show me the itinerary for this reservation
+      - El usuario indicates that their last name is {{vars_glob.vueloReconocido.apellido}}
+      - El usuario says that he has no more questions
+    expected_results:
+      - El agente indicates the passenger reservations
+      - El agente must show the itinerary of the indicated reservation and ask if the user has more queries
+      - El agente must indicate that <categories> is "RECORD_LOCATOR" and <next_action> is "information"
+      - El agente must route to survey
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloReconocido.entityId }}"
+      current_context: "{{ vars_glob.vueloReconocido.current_context }}"
+    test_case_key: PACONW-T504
+
+  # 05 - IDENTIFICACION RESERVA - Cliente no identificado solicita código para una fecha (Español).
+  "cliente_no_identificado_codigo_es":
+    steps:
+      - El usuario pregunta quiero saber sobre mi reserva fecha {{vars_glob.fecha}}
+      - El usuario dice no tengo esa información solo esta reserva
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita información del pasajero
+      - El agente debe indicar el link donde puede ingresar apellido y codigo de reserva para ofrecer información y preguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    test_case_key: PACONW-T505
+
+  # 06 - IDENTIFICACION RESERVA - Cliente no identificado (Portugués).
+  "cliente_no_identificado_pt":
+    steps:
+      - El usuario pergunta quero saber sobre a minha reserva de {{vars_glob.fecha}}
+      - El usuario diz não tenho essa informação apenas esta reserva
+      - El usuario diz que já não tem mais perguntas
+    expected_results:
+      - El agente deve indicar que precisa de informações do passageiro
+      - El agente deve indicar o link onde pode inserir sobrenome e código de reserva para oferecer informações e perguntar se tem mais consultas
+      - El agente deve indicar que <categories> seja "RECORD_LOCATOR" e <next_action> seja "information"
+      - El agente deve derivar a encuesta (survey)
+    max_turns: 10
+    test_case_key: PACONW-T506
+
+  # 07 - IDENTIFICACION RESERVA - Cliente no identificado (Inglés).
+  "cliente_no_identificado_en":
+    steps:
+      - The user says I want to know about my reservation for the date {{vars_glob.fecha}}
+      - The user says I don't have that information only this reservation
+      - The user says that he has no more questions
+    expected_results:
+      - The agent indicates that it needs passenger information
+      - The agent must provide a link where the customer can enter last name and booking code to get information and ask if the user has more queries
+      - The agent must indicate that <categories> is "RECORD_LOCATOR" and <next_action> is "information"
+      - The agent must route to survey
+    max_turns: 10
+    test_case_key: PACONW-T507
+
+  # 08 - IDENTIFICACION RESERVA - Cliente identificado sin reservas para la fecha indicada (Español).
+  "cliente_identificado_sin_reservas_es":
+    steps:
+      - El usuario dice quiero conocer mis reservas {{vars_glob.fecha}}
+      - El usuario dice no tengo esa información solo esta reserva
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica que no se encontraron reservas asociadas al cliente autenticado e informa que puede revisar en Mis Viajes y preguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroSinOrdenes.entityId }}"
+      current_context: "{{ vars_glob.pasajeroSinOrdenes.current_context }}"
+    test_case_key: PACONW-T508
+
+  # 09 - IDENTIFICACION RESERVA - Cliente identificado sin reservas para la fecha indicada (Portugués).
+  "cliente_identificado_sin_reservas_pt":
+    steps:
+      - El usuario diz Quero conhecer minhas reservas {{vars_glob.fecha}}
+      - El usuario diz não tenho essa informação apenas esta reserva
+      - El usuario diz que já não tem mais perguntas
+    expected_results:
+      - El agente indica que não foram encontradas reservas associadas ao cliente autenticado informa que pode revisar em Meus Viagens e perguntar se tem mais consultas
+      - El agente deve indicar que <categories> seja "RECORD_LOCATOR" e <next_action> seja "information"
+      - El agente deve derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroSinOrdenes.entityId }}"
+      current_context: "{{ vars_glob.pasajeroSinOrdenes.current_context }}"
+    test_case_key: PACONW-T509
+
+  # 10 - IDENTIFICACION RESERVA - Cliente identificado sin reservas para la fecha indicada (Inglés).
+  "cliente_identificado_sin_reservas_en":
+    steps:
+      - El usuario says Do I want to check my reservation(s) {{vars_glob.fecha}}
+      - El usuario says I don't have that information only this reservation
+      - El usuario says that he has no more questions
+    expected_results:
+      - El agente indicates that no reservations were found associated with the authenticated customer informs about My Trips and asks if the user has more queries
+      - El agente must indicate that <categories> is "RECORD_LOCATOR" and <next_action> is "information"
+      - El agente must route to survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroSinOrdenes.entityId }}"
+      current_context: "{{ vars_glob.pasajeroSinOrdenes.current_context }}"
+    test_case_key: PACONW-T510
+
+  # 11 - IDENTIFICACION RESERVA - Validación de formato de fecha inválida (Español).
+  "cliente_fecha_invalida":
+    steps:
+      - El usuario dice quiero saber sobre mi reserva de fecha 24/25/2026
+      - El usuario dice quiero saber sobre mi reserva de fecha 45/11/2026
+      - El usuario dice quiero saber sobre mi reserva de fecha 10/12/5000
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica que no se encontraron reservas para el periodo que consulta informa sobre Mis Viajes y preguntar si tiene mas consultas
+      - El agente indica nuevamente que no se encontraron reservas para el periodo que consulta informa sobre Mis Viajes y preguntar si tiene mas consultas
+      - El agente indica por tercera vez que no se encontraron reservas para el periodo que consulta informa sobre Mis Viajes y preguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    test_case_key: PACONW-T511
+
+  # 12 - IDENTIFICACION RESERVA - Cliente No identificado múltiples idiomas soportados en la misma sesión.
+  "cliente_multilenguaje":
+    steps:
+      - El usuario says Do I want to check my reservation(s)
+      - El usuario diz Quero conhecer minhas reservas
+      - El usuario dice quiero saber sobre mi reserva de fecha {{vars_glob.vueloTerceroReconocido.fecha}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indicates in English that no reservations were found associated with the authenticated customer informs about My Trips and asks if the user has more queries
+      - El agente indica em português que não foram encontradas reservas associadas ao cliente autenticado informa sobre Meus Viagens e perguntar se tem mais consultas
+      - El agente indica en español que no se encontraron reservas para el periodo que consulta informa sobre Mis Viajes y preguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 10
+    test_case_key: PACONW-T512
+
+  # 13 - IDENTIFICACION RESERVA - No mostrar códigos de reserva de otro cliente (Español).
+  "no_mostrar_codigos_otro_cliente":
+    steps:
+      - El usuario dice necesito el codigo de reserva para el pasajero {{vars_glob.rut}} y apellido {{vars_glob.vueloTerceroReconocido.apellido}}
+      - El usuario dice necesito el codigo de reserva para el pasajero {{vars_glob.vueloTerceroReconocido.vuelo}} y fecha {{vars_glob.vueloTerceroReconocido.fecha}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que no se encontraron reservas para el pasajero consultado e informar sobre Mis Viajes y preguntar si tiene mas consultas
+      - El agente debe indicar que no se encontraron reservas para el pasajero consultado e informar sobre Mis Viajes y preguntar si tiene mas consultas
+      - El agente debe indicar que <categories> sea "RECORD_LOCATOR" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.variasReservas.entityId }}"
+      current_context: "{{ vars_glob.variasReservas.current_context }}"
+    test_case_key: PACONW-T513

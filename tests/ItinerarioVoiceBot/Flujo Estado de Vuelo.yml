@@ -1,0 +1,357 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 5P5GKGK6UI
+  bedrock_agent_alias_id: EXDOVO98PC
+  bedrock_prompt_session_attributes:
+    date: "This is today's date 2025-09-11"
+    ICULocale: "You must reply in ES regardless of the language used in the user's input"
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "stg"
+    conversationId: "convId"
+vars_glob:
+  vueloAdelantado:
+    vuelo: "LA 70"
+    fecha: "17 de octubre de 2025"
+    entityId: "9575204d-99ba-4acd-9e14-b253cd0b744f"
+    record_orders_ids: '{"LA0451947FIVE": "2025-17-24"}'
+    quantity_orders: "1"
+  vueloAtrasado:
+    vuelo: "LA 4219"
+    fecha: "17 de octubre de 2025"
+    entityId: "9fb4cbdd-3e05-429a-9ad9-f18f129ecc04"
+    record_orders_ids: '{"LA0353573ZTBU": "2025-10-17"}'
+    quantity_orders: "1"
+  vueloCancelado:
+    vuelo: "LA 3693"
+    fecha: "28 de octubre de 2025"
+    entityId: "dee7ddc9-3a6a-47d6-9e09-b05042c698aa"
+    record_orders_ids: '{"LA9579427VMBN": "2025-10-28"}'
+    quantity_orders: "1"
+  vueloATiempo:
+    entityId: "8ce014d9-5358-474c-bad2-a284db16f10f"
+    record_orders_ids: '{"LA0353573ZTBU": "2025-09-16"}'
+    quantity_orders: "1"
+    vuelo: "LA 2453"
+    fecha: "18 de septiembre de 2025"
+  vueloReprogramado:
+    entityId: "8240c861-d787-4906-a7d7-e06029f83a7a"
+    record_orders_ids: '{"LA9574351PLVQ": "2025-09-19"}'
+    quantity_orders: "1"
+    vuelo: "LA 3838"
+    fecha: "19 de septiembre de 2025"
+  vueloEstadoNoReconocido:
+    vuelo: "LA 70"
+    fecha: "17 de octubre de 2027"
+  pasajeroSinOrdenes:
+    entityId: "89088556-af49-4d7e-bc59-d5c47bdf6b7d"
+  pasajeroTerceroReconocido:
+    entityId: "4361d18c-d215-4b53-8e3e-e6eaf8c2024b"
+
+tests:
+  # Flujo estado de vuelo - es para un tercero el vuelo, reconoce vuelo y quiere mensaje de repeticion (A tiempo)
+  "tercero_con_repeticion_a_tiempo":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - EL usuario indica que el vuelo es para un tercero
+      - El usuario indica que el numero de vuelo es {{vars_glob.vueloATiempo.vuelo}} y la fecha es {{vars_glob.vueloATiempo.fecha}}
+      - El usuario confirma que ese es su vuelo
+      - El usuario indica que si tiene más preguntas y pregunta si le puede repetir la información del vuelo
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita que confirme el número del vuelo
+      - El Agente solicita que confirme el número y fecha indicada
+      - El agente debe dar la información del vuelo y puede preguntar si desea escuchar nuevamente o si tiene más preguntas
+      - El Agente repite la información del vuelo
+      - El agente transfiere a encuesta (survey)
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroTerceroReconocido.entityId }}"
+    test_case_key: PROCVB-T1214
+
+  # Flujo estado de vuelo - es para un tercero el vuelo, reconoce vuelo y no quiere mensaje de repeticion (vuelo reprogramado)
+  "tercero_sin_repeticion_reprogramado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que es para un tercero
+      - El usuario indica que el número es {{vars_glob.vueloReprogramado.vuelo}} y la fecha es {{vars_glob.vueloReprogramado.fecha}}
+      - El usuario confirma la información
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita que confirme el número del vuelo
+      - El Agente solicita que confirme el número y fecha indicada
+      - El agente debe dar la información del vuelo (reprogramado) y el agente debe preguntar si le gustaría escuchar nuevamente la información o si tiene más preguntas
+      - El agente transfiere a encuesta (<action>survey</action>)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroTerceroReconocido.entityId }}"
+    test_case_key: PROCVB-T1215
+
+  # Flujo estado de vuelo - Vuelo Propio, reconoce vuelo y no quiere mensaje de repeticion (Vuelo a Tiempo)
+  "propio_sin_repeticion_a_tiempo":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es para él
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El agente debe dar la información del vuelo (a tiempo) y el Agente debe preguntar si tiene alguna pregunta o si desea escucharlo nuevamente
+      - El agente transfiere a encuesta (survey)
+    max_turns: 3
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloATiempo.entityId }}"
+    bedrock_prompt_session_attributes:
+      record_orders_ids: "{{ vars_glob.vueloATiempo.record_orders_ids }}"
+      quantity_orders: "{{ vars_glob.vueloATiempo.quantity_orders }}"
+    test_case_key: PROCVB-T1216
+
+  # Flujo estado de vuelo - Vuelo Propio, reconoce vuelo y no quiere mensaje de repeticion (Vuelo reprogramado)
+  "propio_sin_repeticion_reprogramado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es para él
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El agente debe dar la información del vuelo y el Agente debe preguntar si tiene alguna pregunta o si desea escucharlo nuevamente
+      - El agente transfiere a encuesta (survey)
+    max_turns: 3
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloReprogramado.entityId }}"
+    bedrock_prompt_session_attributes:
+      record_orders_ids: "{{ vars_glob.vueloReprogramado.record_orders_ids }}"
+      quantity_orders: "{{ vars_glob.vueloReprogramado.quantity_orders }}"
+    test_case_key: PROCVB-T1217
+
+  # Flujo estado de vuelo - es para un tercero el vuelo, reconoce vuelo y no quiere mensaje de repeticion (Vuelo a Tiempo)
+  "tercero_sin_repeticion_a_tiempo":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que es para un tercero
+      - El usuario indica que el número es {{vars_glob.vueloATiempo.vuelo}} y la fecha es {{vars_glob.vueloATiempo.fecha}}
+      - El usuario confirma la información
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita que confirme el número del vuelo
+      - El Agente solicita que confirme el número y fecha indicada
+      - El agente debe dar la información del vuelo (a tiempo) {{vars_glob.vueloATiempo.vuelo}} con fecha {{vars_glob.vueloATiempo.fecha}} y el agente debe preguntar si le gustaría escuchar nuevamente la información o si tiene más preguntas
+      - El agente transfiere a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroTerceroReconocido.entityId }}"
+    test_case_key: PROCVB-T1218
+
+  # Flujo estado de vuelo - es un vuelo para él, reconoce vuelo y no quiere mensaje de repeticion
+  "propio_sin_repeticion":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es para él
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El agente debe dar información del vuelo y el Agente debe preguntar si tiene alguna pregunta o si quiere escucharlo nuevamente
+      - El agente transfiere a encuesta (survey)
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloATiempo.entityId }}"
+    bedrock_prompt_session_attributes:
+      record_orders_ids: "{{ vars_glob.vueloATiempo.record_orders_ids }}"
+      quantity_orders: "{{ vars_glob.vueloATiempo.quantity_orders }}"
+    max_turns: 4
+    test_case_key: PROCVB-T1219
+
+  # Flujo estado de vuelo - es un vuelo para él, reconoce vuelo y si quiere mensaje de repeticion
+  "propio_con_repeticion":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es para él
+      - El usuario indica que si tiene más preguntas, y dice ¿podrías repetirme la información del vuelo?
+      - El usuario responde No, gracias
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El agente debe dar la información del vuelo y el Agente debe preguntar si tiene alguna pregunta o si quiere escucharlo nuevamente
+      - El Agente repite la información del vuelo
+      - El agente transfiere a encuesta (survey)
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloATiempo.entityId }}"
+    bedrock_prompt_session_attributes:
+      record_orders_ids: "{{ vars_glob.vueloATiempo.record_orders_ids }}"
+      quantity_orders: "{{ vars_glob.vueloATiempo.quantity_orders }}"
+    max_turns: 4
+    test_case_key: PROCVB-T1220
+
+  # Flujo estado de vuelo - es su propio vuelo y no tiene ordenes
+  "propio_sin_ordenes":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es para él
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente entrega información general sobre cómo conocer el estado de un vuelo y pregunta si tiene más consultas. O solicita el numero o fecha del vuelo para saber que vuelo es.
+      - El agente transfiere a encuesta (survey)
+    max_turns: 3
+    bedrock_session_attributes:
+      entityId: "{{vars_glob.pasajeroSinOrdenes.entityId}}"
+    test_case_key: PROCVB-T1221
+
+  # Flujo estado de vuelo - es para un tercero el vuelo y es un usuario no reconocido
+  "tercero_no_reconocido":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es de su hermano
+      - El usuario indica que el numero de vuelo es {{vars_glob.vueloATiempo.vuelo}} y la fecha es {{vars_glob.vueloATiempo.fecha}}
+      - El usuario confirma que ese es su vuelo
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita indicar número de vuelo y fecha
+      - El Agente solicita confirmar el número y fecha indicada
+      - El agente debe dar información del vuelo y puede preguntar si tiene alguna pregunta o si quiere escucharlo nuevamente
+    max_turns: 4
+    bedrock_prompt_session_attributes:
+      customerId: "Unavailable"
+    bedrock_session_attributes:
+      entityId: ""
+    test_case_key: PROCVB-T1222
+
+  # Flujo estado de vuelo - Vuelo Propio, reconoce vuelo y no quiere mensaje de repeticion (Vuelo Adelantado)
+  "propio_sin_repeticion_adelantado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es para él
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El agente debe dar información del vuelo indicando que está adelantado y el Agente debe preguntar si tiene alguna pregunta o si quiere escucharlo nuevamente
+      - El agente transfiere a encuesta (survey)
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloAdelantado.entityId }}"
+    bedrock_prompt_session_attributes:
+      record_orders_ids: "{{ vars_glob.vueloAdelantado.record_orders_ids }}"
+      quantity_orders: "{{ vars_glob.vueloAdelantado.quantity_orders }}"
+    max_turns: 10
+    test_case_key: PROCVB-T1287
+
+  #Flujo estado de vuelo - Vuelo Propio, reconoce vuelo y no quiere mensaje de repeticion (Atrasado)
+  "propio_sin_repeticion_atrasado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que es el la persona que viaja
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El agente debe dar información del vuelo indicandole que está atrasado y el Agente debe preguntar si tiene alguna pregunta o si quiere escucharlo nuevamente
+      - El agente transfiere a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{vars_glob.vueloAtrasado.entityId}}"
+    bedrock_prompt_session_attributes:
+      record_orders_ids: "{{ vars_glob.vueloAtrasado.record_orders_ids }}"
+      quantity_orders: "{{ vars_glob.vueloAtrasado.quantity_orders }}"
+    test_case_key: PROCVB-T1288
+
+  # Flujo estado de vuelo - Vuelo Propio, reconoce vuelo y no quiere mensaje de repeticion (Vuelo Cancelado)
+  "propio_sin_repeticion_cancelado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que el vuelo es para él y que el numero de vuelo es {{vars_glob.vueloCancelado.vuelo}} y la fecha es {{vars_glob.vueloCancelado.fecha}}
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El agente debe dar información del vuelo indicando que está cancelado o que no ha encontrado el vuelo 
+      - El agente transfiere a encuesta (survey)
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloCancelado.entityId }}"
+    bedrock_prompt_session_attributes:
+      record_orders_ids: "{{ vars_glob.vueloCancelado.record_orders_ids }}"
+      quantity_orders: "{{ vars_glob.vueloCancelado.quantity_orders }}"
+    max_turns: 10
+    test_case_key: PROCVB-T1289
+
+  #Flujo estado de vuelo - es para un tercero el vuelo, reconoce vuelo y no quiere mensaje de repeticion (Vuelo Adelantado)
+  "tercero_sin_repeticion_adelantado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - Indica que no es para él sino que es para un tercero
+      - Indica que el número es {{vars_glob.vueloAdelantado.vuelo}} y la fecha es {{vars_glob.vueloAdelantado.fecha}}
+      - El usuario confirma la información del vuelo
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita que confirme el número del vuelo
+      - El Agente solicita que confirme el número y fecha indicada
+      - El agente debe dar la información del vuelo indicando que está adelantado y el agente debe preguntar si le gustaría escuchar nuevamente la información o si tiene más preguntas
+      - El agente transfiere a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroTerceroReconocido.entityId }}"
+    test_case_key: PROCVB-T1290
+
+  #Flujo estado de vuelo - es para un tercero el vuelo, reconoce vuelo y no quiere mensaje de repeticion (Vuelo Atrasado)
+  "tercero_sin_repeticion_atrasado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que es para un tercero
+      - El usuario indica que el número es {{vars_glob.vueloAtrasado.vuelo}} y la fecha es {{vars_glob.vueloAtrasado.fecha}}
+      - El usuario confirma la información
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita que confirme el número del vuelo
+      - El Agente solicita que confirme el número y fecha indicada
+      - El agente debe dar la información del vuelo indicando que está atrasado y el agente debe preguntar si le gustaría escuchar nuevamente la información o si tiene más preguntas
+      - El agente transfiere a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroTerceroReconocido.entityId }}"
+    test_case_key: PROCVB-T1291
+
+#Flujo estado de vuelo - es para un tercero el vuelo, reconoce vuelo y no quiere mensaje de repeticion (Vuelo Cancelado)
+  "tercero_sin_repeticion_cancelado":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que es para un tercero
+      - El usuario indica que el número es {{vars_glob.vueloCancelado.vuelo}} y la fecha es {{vars_glob.vueloCancelado.fecha}}
+      - El usuario confirma la información
+      - El usuario responde que no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita que confirme el número del vuelo
+      - El Agente solicita que confirme el número y fecha indicada
+      - El agente debe dar la información del vuelo indicando que está cancelado o que no ha encontrado el vuelo y el agente debe preguntar si le gustaría escuchar nuevamente la información o si tiene más preguntas
+      - El agente transfiere a encuesta (survey)
+    max_turns: 10
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroTerceroReconocido.entityId }}"
+    test_case_key: PROCVB-T1292
+
+  # Flujo estado de vuelo - es para un tercero el vuelo, reconoce vuelo y quiere mensaje de repeticion 
+  "tercero_sin_repeticion":
+    steps:
+      - El usuario dice quiero saber el estado de mi vuelo
+      - El usuario indica que es para un tercero
+      - El usuario indica que el número es {{vars_glob.vueloATiempo.vuelo}} y la fecha es {{vars_glob.vueloATiempo.fecha}}
+      - El usuario confirma los datos del vuelo
+      - El usuario responde solicitando que le repita la información del vuelo
+      - El usuario responde que ya no tiene más preguntas
+    expected_results:
+      - El Agente pregunta si es él la persona que viaja
+      - El Agente solicita que confirme el número del vuelo
+      - El Agente solicita que confirme el número y fecha indicada
+      - El agente debe dar la información del vuelo {{vars_glob.vueloATiempo.vuelo}} con fecha {{vars_glob.vueloATiempo.fecha}} y el agente debe preguntar si le gustaría escuchar nuevamente la información o si tiene más preguntas
+      - El agente repite la información del vuelo y vuelve a preguntar si tiene más preguntas
+      - El agente transfiere a encuesta (survey)
+    max_turns: 12
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.pasajeroTerceroReconocido.entityId }}"
+    test_case_key: PROCVB-T1294

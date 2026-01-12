@@ -1,0 +1,30 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: YG1LQGQ07L
+  bedrock_agent_alias_id: RDWCWCSG2N
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-05,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+  PACONW-E101_consulta_tipo_de_mascotas:
+    steps:
+      - Que tipo de mascotas puedo llevar en la cabina
+      - Cuando aplica que una mascota sea considerada mascota para cabina
+      - No tengo mas preguntas, gracias
+    expected_results:
+      - Responder que tipos de mascotas estan permitidas en cabina
+      - Las condiciones que se deben cumplir e indicar cuando se considera que una mascota es una mascota para cabina
+      - Al finalizar la conversacion <next_action> debe ser survey
+      - Validar que <categories> sea "PET_PETC_INFO" y <next_action> sea "information"
+    max_turns: 10
+    test_case_key: PACONW-T201
+ 

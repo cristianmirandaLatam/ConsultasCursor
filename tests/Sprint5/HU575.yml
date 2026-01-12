@@ -1,0 +1,269 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 9CTOXQ6R0Y
+  bedrock_agent_alias_id: TOTBOITMLB
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId"
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-12-16,
+    # locale: You must reply in Spanish regardless of the language used in the user's input.
+vars_glob:
+  pasajeroJoseCerquozzi:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    rut: "285974895"
+    cod_reserva: "ABGLWH"
+    n_vuelo: "LA4405"
+    record_orders_ids: '{"la0458023sczp": "2025-01-05"}'
+    email: "nvivasan@gmail.com"
+    fecha: "05 de diciembre de 2025"
+  vueloTerceroReconocido:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "b9090d19-7c0f-48c9-98ed-55c075d8fd2e"
+    record_orders_ids: '{"LA0458486AEMD": "2025-02-25"}'
+    current_context: "{\"customer_name\": \"User's name is valentina and I must use it in the greeting message,\", \"current_date\": \"This is today's date for reference 2025-12-18,\", \"user_orders\": \"[{\\\"order_id\\\": \\\"la0458486aemd\\\", \\\"number_of_flights\\\": 2, \\\"flight_dates\\\": [\\\"2026-02-25\\\", \\\"2026-03-06\\\"]}, {\\\"order_id\\\": \\\"la0457888veab\\\", \\\"number_of_flights\\\": 3, \\\"flight_dates\\\": [\\\"2026-02-26\\\", \\\"2026-03-05\\\", \\\"2026-03-06\\\"]}]\"}"
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Acuña"
+  cod_reserva: "AAAAQQ"
+  n_vuelo: "LA 70"
+tests:
+  # 01 - CORRECCION NOMBRE_ENDOSO - Necesito corregir el nombre que aparece en mi pasaje, ¿es posible?
+  consulta_correccion_nombre:
+    steps:
+      - El usuario dice necesito corregir el nombre que aparece en mi pasaje, ¿es posible?
+      - El usuario escribe email 
+      - El usuario escribe codigo de reserva
+      - El usuario escribe numero viajero frecuente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudar con la corrección de nombre, necesita que confirme algunos datos; email, numero viajero, codigo de reserva
+      - El agente indica no he podido encontrar un perfil asociado a ese correo electrónico, por favor verifica e ingrésalo nuevamente
+      - El agente indica no pude encontrar una reserva con ese código, por favor verifica e ingrésalo nuevamente
+      - El agente indica no he podido encontrar un perfil asociado a ese número de viajero frecuente, por favor verifica e ingrésalo nuevamente
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 10
+    test_case_key: PACONW-T528
+
+  # 02 - CORRECCION NOMBRE_ENDOSO - ¿Cómo hago para cambiar mi nombre en el boleto si está mal escrito?
+  correccion_nombre_pax_02:
+    steps:
+      - El usuario dice cómo hago para cambiar mi nombre en el boleto si está mal escrito
+      - El usuario escribe código de reserva válido {{vars_glob.vueloTerceroReconocido.cod_reserva}}
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudarte con la corrección del nombre en tu boleto necesita que proporciones datos correo electrónico número de viajero frecuente o código de reserva
+      - El agente indica entiendo que necesitas corregir tu nombre en el boleto te comento que LATAM permite la corrección sin costo siempre y cuando se mantenga el mismo pasajero los vuelos sean operados por LATAM y sea una corrección por error de tipeo nombres al revés o apellidos faltantes
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+      current_context: "{{ vars_glob.vueloTerceroReconocido.current_context }}"
+    test_case_key: PACONW-T529
+
+  # 03 - CORRECCION NOMBRE_ENDOSO - En mi pasaje mi nombre está mal, ¿me ayudan a corregirlo?
+  correccion_nombre_pax_03:
+    steps:
+      - El usuario dice en mi pasaje mi nombre está mal me ayudan a corregirlo
+      - El usuario escribe número de vuelo {{vars_glob.n_vuelo}}
+      - El usuario indica que no tiene mas información
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudarte necesita que proporciones datos correo electrónico número de viajero frecuente número de orden o código de reserva
+      - El agente indica estoy teniendo dificultades técnicas para acceder a los detalles de tu reserva ¿te gustaría que te conecte con un agente humano para ayudarte con la corrección de tu nombre
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T530
+
+  # 04 - CORRECCION NOMBRE_ENDOSO - ¿Puedo editar el nombre de mi reserva? Lo ingresé con un error.
+  correccion_nombre_pax_04:
+    steps:
+      - El usuario dice puedo editar el nombre de mi reserva lo ingresé con un error
+      - El usuario escribe código de reserva {{vars_glob.pasajeroJoseCerquozzi.cod_reserva}}
+      - El usuario dice que quiere ser transferido
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudarte necesita que proporciones correo electrónico número de viajero frecuente o código de reserva
+      - El agente indica que verifique que el código sea correcto o que proporcione un dato alternativo correo electrónico o número de viajero frecuente esto ayudará a localizar la reserva correctamente el agente desea transferir con un agente humano
+      - El agente debe transferir al agente humano
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 8
+    test_case_key: PACONW-T531
+
+  # 05 - CORRECCION NOMBRE_ENDOSO - Me gustaría modificar el nombre que figura en mi pasaje, ¿se puede?
+  correccion_nombre_pax_05:
+    steps:
+      - El usuario pregunta me gustaría modificar el nombre que figura en mi pasaje se puede
+      - El usuario indica corregir el orden de los apellidos
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para poder ayudar necesita saber si desea corregir un error de escritura en el nombre actual o transferir el pasaje a otra persona
+      - El agente indica que para ayudarte a corregir el orden de los apellidos necesita que proporciones correo electrónico número de viajero frecuente o código de reserva
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    test_case_key: PACONW-T532
+
+  # 06 - CORRECCION NOMBRE_ENDOSO - ¿Es posible ajustar mi nombre en el ticket si tiene un error de ortografía?
+  correccion_nombre_pax_06:
+    steps:
+      - El usuario pregunta es posible ajustar mi nombre en el ticket si tiene un error de ortografía
+      - El usuario escribe código de reserva {{vars_glob.cod_reserva}}
+      - El usuario indica que quiere continuar
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para comenzar necesita validar la información proporcione correo electrónico número de viajero frecuente o código de reserva
+      - El agente indica que no ha podido encontrar la reserva puede deberse a que el código de reserva no está activo o tiene un error en el formato pregunta si desea ser transferido a un agente humano
+      - El agente debe transferir a un agente humano
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 8
+    test_case_key: PACONW-T533
+
+  # 07 - CORRECCION NOMBRE_ENDOSO - En la reserva mi nombre tiene una letra equivocada, ¿lo pueden corregir?
+  correccion_nombre_pax_07:
+    steps:
+      - El usuario dice en la reserva mi nombre tiene una letra equivocada lo pueden corregir
+      - El usuario escribe código de reserva {{vars_glob.pasajeroJoseCerquozzi.cod_reserva}}
+      - El usuario indica que quiere continuar
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para comenzar necesita validar información proporcione correo electrónico número de viajero frecuente o código de reserva
+      - El agente indica que LATAM permite la corrección sin costo siempre que sea solo un error de tipeo se mantenga el mismo pasajero y los vuelos sean operados por LATAM pero que necesita asistencia de un agente pregunta si transfiere a agente humano para la corrección
+      - El agente debe transferir a un agente humano
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 10
+    test_case_key: PACONW-T534
+
+  # 08 - CORRECCION NOMBRE_ENDOSO - ¿Puedo arreglar mi nombre del pasaje si no coincide exactamente con mi documento?
+  correccion_nombre_pax_08:
+    steps:
+      - El usuario pregunta puedo arreglar mi nombre del pasaje si no coincide exactamente con mi documento
+      - El usuario indica número de vuelo
+      - El usuario indica que quiere ser transferido
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita que le proporciones correo electrónico número de viajero frecuente o código de reserva para verificar la reserva y ayudarte con la corrección
+      - El agente indica que tiene dificultades técnicas para acceder a la reserva pregunta si desea ser transferido a un agente humano
+      - El agente debe transferir a un agente humano
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 8
+    test_case_key: PACONW-T535
+
+  # 09 - CORRECCION NOMBRE_ENDOSO - ¿Cómo puedo modificar mi apellido si lo puse mal al hacer la compra?
+  correccion_nombre_pax_09:
+    steps:
+      - El usuario pregunta cómo puedo modificar mi apellido si lo puse mal al hacer la compra
+      - El usuario escribe código de reserva {{vars_glob.cod_reserva}}
+      - El usuario indica que quiere ser transferido
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudarte a corregir el nombre en el pasaje necesita que proporciones correo electrónico número de viajero frecuente o código de reserva
+      - El agente debe transferir al especialista
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "transfer"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T536
+
+  # 10 - CORRECCION NOMBRE_ENDOSO - quisiera cambiar el nombre de un pasaje
+  correccion_nombre_endoso_10:
+    steps:
+      - El usuario dice quisiera cambiar el nombre de un pasaje
+      - El usuario indica quiero transferir el ticket a otra persona
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudarte de la mejor manera necesita saber si deseas corregir un error en el nombre actual del pasaje o transferir el pasaje a otra persona
+      - El agente indica que la transferencia del pasaje dependerá de la ruta del vuelo si es nacional en Chile es gratuito en Perú tiene un costo en otros aplica condiciones de tarifa también necesitarás documento del titular y del nuevo pasajero y autorización de cesión solicítalo con al menos 24 horas de anticipación pregunta si tienes alguna otra pregunta
+      - El agente debe indicar que <categories> sea "ENDORSEMENT" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T537
+
+  # 11 - CORRECCION NOMBRE_ENDOSO - Hola si quiero realizar el cambio
+  correccion_nombre_endoso_11:
+    steps:
+      - El usuario dice hola si quiero realizar el cambio
+      - El usuario indica transferir el boleto a otra persona
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudarte de la mejor manera necesita saber si deseas corregir un error en el nombre actual o transferir el pasaje a otra persona
+      - El agente indica que para transferir el boleto a otra persona se requieren documentos y se aplican condiciones especiales para Chile y Perú y regulaciones para otros destinos uno de sus agentes podrá asistirte pregunta si tienes alguna otra pregunta
+      - El agente debe indicar que <categories> sea "ENDORSEMENT" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T538
+
+  # 12 - CORRECCION NOMBRE_ENDOSO - Cambio de nombre de pasajero
+  correccion_nombre_endoso_12:
+    steps:
+      - El usuario dice cambio de nombre de pasajero
+      - El usuario indica transferir el ticket a otra persona
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que para ayudarte de la mejor manera necesita saber si deseas corregir un error en el nombre actual o transferir el pasaje a otra persona
+      - El agente indica que para transferir el boleto a otra persona serán necesarios documentos y aplican condiciones especiales para vuelos domésticos en Chile y Perú y regulaciones para otros destinos este proceso se realiza sólo con asistencia de agente pregunta si tienes alguna otra pregunta
+      - El agente debe indicar que <categories> sea "ENDORSEMENT" y <next_action> sea "information"
+      - El agente debe derivar a encuesta survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T539
+
+  # 13 - CORRECCION NOMBRE_ENDOSO - Cambio de nombre de pasajero (Português)
+  correccion_nome_endoso_13:
+    steps:
+      - O usuário diz alteração de nome do passageiro
+      - O usuário solicita a transferência da passagem para outra pessoa.
+      - O usuário diz que não tem mais perguntas
+    expected_results:
+      - O agente deve indicar que para ajudá-lo da melhor forma possível precisa confirmar se deseja corrigir um erro de digitação no nome atual do bilhete ou transferir o bilhete para outra pessoa
+      - O agente indica que para transferir o bilhete será necessária a assistência de um agente não é possível pelo site LATAM e o processo depende da tarifa para transferir será preciso documento do titular do bilhete do novo passageiro e autorização de transferência assinada para voos domésticos no Chile ou Peru há condições especiais pergunta se posso ajudar com mais alguma informação
+      - O agente deve indicar que <categories> seja "ENDORSEMENT" e <next_action> seja "information"
+      - O agente deve derivar a pesquisa de satisfação survey
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T540
+
+  # 14 - CORRECCION NOMBRE_ENDOSO - Cambio de nombre de pasajero (Inglés)
+  passenger_name_change_14:
+    steps:
+      - The user says passenger name change
+      - The user says transfer ticket to another person
+      - The user says they have no more questions
+    expected_results:
+      - The agent must indicate that to best assist you could you please confirm whether you need to correct an error in the name on your ticket or if you wish to transfer the ticket to another person
+      - The agent indicates to transfer your ticket you will need ID of both the ticket holder and new passenger and authorization for transfer and for domestic flights within Chile the change is free within Peru has a fixed fee for international flights is subject to regulations and fare differences since this change cannot be made online our agents will assist once you have the documents ready asks if there's anything else
+      - The agent must indicate that <categories> is "ENDORSEMENT" and <next_action> is "information"
+      - The agent must transfer to survey
+    max_turns: 8
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTerceroReconocido.entityId }}"
+    test_case_key: PACONW-T541

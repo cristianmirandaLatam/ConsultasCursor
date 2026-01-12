@@ -1,0 +1,166 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 9CTOXQ6R0Y
+  bedrock_agent_alias_id: TOTBOITMLB
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-06,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+  # 001 - CAMBIO - CAMBIO NOMBRE - Corregir nombre mal escrito (AgentEval)
+  consulta_corregir_nombre_mal_escrito:
+    steps:
+      - El usuario dice ¿Puedo corregir mi nombre si está mal escrito?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que solo LATAM corrige nombre/apellido; agencias u otras aerolíneas requieren gestión directa. Cambios de ambos, nuevo pasajero.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T279
+
+  # 002 - CAMBIO - CAMBIO NOMBRE - Arreglar nombre en vuelo
+  arreglar_nombre_en_vuelo:
+    steps:
+      - El usuario dice Necesito arreglar mi nombre en mi vuelo.
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que LATAM corrige nombre/apellido una vez sin costo; otras aerolíneas pueden tener diferencia de tarifa.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T280
+
+  # 003 - CAMBIO - CAMBIO NOMBRE - Corregir apellido mal escrito en compra
+  corregir_apellido_mal_escrito:
+    steps:
+      - El usuario dice Acabo de comprar pero el apellido está mal escrito, ¿cómo lo podemos arreglar?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que errores menores a 3 letras, nombre al revés o falta de apellido se corrigen sin documentos; otros requieren documento.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T281
+
+  # 004 - CAMBIO - CAMBIO NOMBRE - Corregir apellido mal escrito
+  corregir_apellido_mal_escrito_2:
+    steps:
+      - El usuario dice ¿Puedo corregir apellido si está mal escrito?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que errores menores a 3 letras, duplicado o falta de apellido se corrigen sin documentos; otros requieren documento.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T282
+
+  # 005 - CAMBIO - CAMBIO NOMBRE - Documentos para cambiar nombre o apellido
+  documentos_para_cambiar_nombre_apellido:
+    steps:
+      - El usuario dice ¿Qué documentos necesito para cambiar mi nombre/apellido?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que errores menores a 3 letras no requieren documentos; otros o cambios legales requieren documento oficial.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T283
+
+  # 006 - CAMBIO - CAMBIO NOMBRE - Cambiar nombre tras dividir reserva
+  cambiar_nombre_tras_dividir_reserva:
+    steps:
+      - El usuario dice ¿Qué pasa si necesito cambiar el nombre de un pasajero después de dividir la reserva?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que tras dividir la reserva, cambios requieren consentimiento y documentos; corrección por error solo una vez sin costo si vuelos LATAM.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T284
+
+  # 007 - CAMBIO - CAMBIO NOMBRE - Cambio nombre por matrimonio/adopción legal
+  cambio_nombre_por_matrimonio_adopcion_legal:
+    steps:
+      - El usuario dice ¿Cómo se gestiona un cambio de nombre por matrimonio/adopción y qué documentación se requiere?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que si el cambio es legal, debe presentar documento oficial que acredite el cambio de nombre.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T285
+
+  # 008 - CAMBIO - CAMBIO NOMBRE - Corregir nombre en reserva con otra aerolínea
+  corregir_nombre_reserva_otra_aerolinea:
+    steps:
+      - El usuario dice ¿Qué pasa si necesito corregir el nombre o datos del pasajero en una reserva que incluye vuelos operados por otra aerolínea?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que si todos los vuelos son LATAM, corrección sin costo; con otra aerolínea puede tener costo por diferencia de tarifa.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T286
+
+  # 009 - CAMBIO - CAMBIO NOMBRE - Error en una letra u omisión de apellido
+  error_letra_omision_apellido:
+    steps:
+      - El usuario dice ¿Hay algún problema para volar si solo me equivoqué en una letra u omití un apellido?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que la corrección es gratuita si todos los vuelos son LATAM; con otra aerolínea puede haber cargo adicional.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T287
+
+  # 010 - CAMBIO - CAMBIO NOMBRE - Solo primer nombre y apellido en pasaje
+  solo_primer_nombre_apellido_en_pasaje:
+    steps:
+      - El usuario dice ¿Qué pasa si solo ingreso mi primer nombre y apellido en el pasaje? ¿Debo ingresar mi segundo nombre y apellido materno/segundo apellido en el boleto?
+      - El usuario indica que es para un ticket de vuelo.
+      - El usuario confirma la transferencia.
+      - El usuario indica que no tiene más preguntas.
+    expected_results:
+      - El agente debe indicar que para Sudamérica basta primer nombre y apellido; fuera debe coincidir con pasaporte y visa.
+      - El agente debe derivar a transferencia con agente humano.
+      - El agente debe indicar que <categories> sea "PAX_NAME_CHANGE" y <next_action> sea "confirm_transfer".
+      - El agente transfiere a encuesta (survey).
+    max_turns: 10
+    test_case_key: PACONW-T288

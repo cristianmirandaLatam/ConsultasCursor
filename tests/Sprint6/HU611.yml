@@ -1,0 +1,134 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: LO6UKFHFZP
+  bedrock_agent_alias_id: Y1UT4SVWGL
+  bedrock_prompt_session_attributes:
+    date: "This is today's date 2026-01-07"
+    ICULocale: "You must reply in ES regardless of the language used in the user's input"
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId448"
+vars_glob:
+  vueloTitularCris:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    record_orders_ids: '{"LA0458486AEMD": "2026-02-25"}'
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Miranda"
+  vueloJose:
+    vuelo: "LA4405"
+    fecha: "05 de enero de 2026"
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    record_orders_ids: '{"la0458023sczp": "2025-01-05"}'
+    quantity_orders: "2"
+    cod_reserva: "ABGLWH"
+    apellido: "Cerquozzi"
+  vueloTerceroReconocido:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    record_orders_ids: '{"LA0457888VEAB": "2025-01-05"}'
+    quantity_orders: "2"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Acuña"
+  vueloWilliam:
+    entityId: "3627d565-35f7-4531-9ef0-49830112263f"
+  vueloDanila:
+    entityId: "07a4915b-635a-459c-a1f9-05bb5e4e7d46"
+  vueloLuzia:
+    entityId: "07c268a7-e5f0-40a2-8fdf-c73591affce7"
+
+tests:
+  # 01. Migración Franquicia Equipaje - Cuál es la tarifa asociada a mi equipaje según mi orden de vuelo?
+  "01.consulta_tarifa_equipaje":
+    steps:
+      - El usuario quiere saber cuál es la tarifa asociada a su equipaje según su orden de vuelo
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica que el equipaje permitido varía según la tarifa adquirida y ofrece detalles según la orden de vuelo proporcionada
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_ALLOWANCE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T674
+
+  # 02. Migración Franquicia Equipaje - Qué equipaje incluye mi orden de vuelo?
+  "02.consulta_equipaje_orden_vuelo":
+    steps:
+      - El usuario quiere saber qué equipaje incluye su orden de vuelo cantidad de maletas permitidas, peso, dimensiones para cliente con tarifa Basica
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indicar que incluye la tarifa Básica en cuanto a franquicia de equipaje para la orden de vuelo proporcionada
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_ALLOWANCE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T675
+
+  # 07. Migración Franquicia Equipaje - Qué equipaje puedo llevar para mi vuelo nacional?
+  "07.consulta_equipaje_vuelo_nacional":
+    steps:
+      - El usuario dice qué equipaje puedo llevar en mi vuelo nacional?
+      - El usuario indica que el equipaje pertenece a su reserva si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica la franquicia de equipaje permitida para vuelos nacionales según la tarifa adquirida
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_ALLOWANCE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloDanila.entityId }}"
+    test_case_key: PACONW-T676
+
+  # 08. Migración Franquicia Equipaje - Qué equipaje puedo llevar para mi vuelo internacional?
+  "08.consulta_equipaje_vuelo_internacional":
+    steps:
+      - El usuario dice qué equipaje puedo llevar en mi vuelo internacional?
+      - El usuario indica que el equipaje pertenece a su reserva si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica la franquicia de equipaje permitida para vuelos internacionales según la tarifa adquirida
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_ALLOWANCE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloTitularCris.entityId }}"
+    test_case_key: PACONW-T677
+
+  # 11. Migración Franquicia Equipaje - Quiero saber sobre mi equipaje de cabina y bodega
+  "11.consulta_equipaje_cabina_bodega":
+    steps:
+      - El usuario indica que quiere saber sobre su equipaje de cabina y bodega
+      - El usuario indica que el equipaje pertenece a su reserva si el agente pregunta
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica la franquicia de equipaje de cabina y bodega permitida según la tarifa adquirida para vuelos con conexión
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_ALLOWANCE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.vueloLuzia.entityId }}"
+    test_case_key: PACONW-T678
+

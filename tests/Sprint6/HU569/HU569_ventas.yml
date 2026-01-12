@@ -1,0 +1,96 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: QQLL5EYZEV
+  bedrock_agent_alias_id: RBRKXNDKQN
+  bedrock_session_attributes:
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId"
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-12-16,
+    # locale: You must reply in Spanish regardless of the language used in the user's input.
+vars_glob:
+  clienteGold:
+    entityId: "bfa2d5a8-84fc-4032-bae5-40385a73e016"
+    rut: "285974895"
+    cod_reserva: "ABGLWH"
+    n_vuelo: "LA4405"
+    record_orders_ids: '{"la0458023sczp": "2025-01-05"}'
+    email: "nvivasan@gmail.com"
+    fecha: "05 de diciembre de 2025"
+  clienteNoReconocido:
+    rut: "12345678-9"
+    email: "noreconocido@gmail.com"
+    n_frecuente: "0000000000"
+tests:
+  # 01 - VALIDACION HVC - ¿quiero comprar un pasaje con mi TC?
+  validacion_hvc_comprar_pasaje_tc:
+    steps:
+      - El usuario pregunta quiero comprar un pasaje con mi TC, soy gold
+      - El usuario indica que si
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar bienvenido al servicio de atención exclusivo para clientes élite serás transferido con uno de nuestros expertos para que pueda ayudarte a resolver cualquier duda o consulta ¿Tu requerimiento fue resuelto en esta atención?
+      - El agente pregunta si tiene alguna duda o consulta
+      - El agente debe derivar a encuesta survey
+      - El agente debe indicar que <categories> sea "HVC_HILDCARD" y <next_action> sea "transfer"
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.clienteGold.entityId }}"
+    # test_case_key: PACONW-T554
+
+  # 02 - VALIDACION HVC - ¿quiero comprar un pasaje con mi TC? (Sin mencionar que eres gold)
+  validacion_hvc_comprar_pasaje_tc_sin_mencionar_gold:
+    steps:
+      - El usuario pregunta quiero comprar un pasaje con mi TC
+      - El usuario indica para 2 personas, viaje ida y vuelta, sin menores
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar por supuesto te ayudo con la compra de tu pasaje para brindarte la mejor información necesita saber para cuantas personas es el pasaje si viaja algún menor de 12 años si es ida y vuelta o con escalas
+      - El agente indica la forma más conveniente de comprar el pasaje es a través de LATAM.com donde podrá ahorrar hasta USD 95 ver todos los vuelos pagar con tarjeta de crédito y seleccionar cuotas disponibles puede realizar su compra aquí https://www.latamairlines.com/cl/es recuerda verificar bien el medio de pago y la cantidad de cuotas seleccionadas ya que una vez realizado el pago no será posible modificarlos ¿Hay algo más en lo que pueda ayudarte?
+      - El agente debe derivar a encuesta survey
+      - El agente debe indicar que <categories> sea "PURCHASE_STANDARD" y <next_action> sea "information"
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.clienteGold.entityId }}"
+    test_case_key: PACONW-T555
+
+  # 03 - VALIDACION HVC - ¿quiero comprar un pasaje con mi TC? (Mencionando que es VIP)
+  validacion_hvc_comprar_pasaje_tc_vip:
+    steps:
+      - El usuario pregunta quiero comprar un pasaje con mi TC, soy VIP
+      - El usuario indica para 2 personas, viaje ida y vuelta, sin menores
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar por supuesto como cliente preferencial le ayudará con la compra para brindarle la mejor asistencia solicita si el viaje es de ida y vuelta o múltiples destinos para cuantas personas y si viajan niños sus edades y si están acompañados
+      - El agente indica la forma más conveniente de comprar el pasaje de ida y vuelta es por LATAM.com https://www.latamairlines.com/cl/es donde podrá ahorrar hasta USD 95 ver ofertas ordenar vuelos según preferencia pagar con tarjeta y cuotas disponibles ¿Hay algo más en lo que pueda ayudarte?
+      - El agente debe derivar a encuesta survey
+      - El agente debe indicar que <categories> sea "PURCHASE_STANDARD" y <next_action> sea "information"
+    max_turns: 6
+    bedrock_session_attributes:
+      entityId: "{{ vars_glob.clienteGold.entityId }}"
+    test_case_key: PACONW-T556
+
+  # 09 - VALIDACION HVC - ¿quiero comprar un pasaje santiago - lima?
+  validacion_hvc_comprar_pasaje_scl_lima:
+    steps:
+      - El usuario pregunta quiero comprar un pasaje santiago lima
+      - El usuario indica rut {{vars_glob.clienteNoReconocido.rut}} viajan 2 adultos ida y regreso y que es elite
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente debe indicar que necesita uno de los siguientes datos para verificación Rut, email o número de pasajero frecuente
+      - El agente indica apreciado cliente Elite gracias por preferir LATAM Airlines para la compra del pasaje santiago lima le recomienda usar LATAM.com https://www.latamairlines.com/cl/es es la opción más conveniente permite ahorrar hasta USD 95 ver todas las opciones acceso a las tarifas ordenar por preferencia en el sitio web seleccionar ruta y fecha podrá ver las opciones ¿Hay algo más en lo que pueda ayudarte?
+      - El agente debe derivar a encuesta survey
+      - El agente debe indicar que <categories> sea "PURCHASE_STANDARD" y <next_action> sea "information"
+    max_turns: 6
+    test_case_key: PACONW-T561
+

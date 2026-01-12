@@ -1,0 +1,150 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+target:
+  aws_region: us-east-1
+  aws_profile: Asistente
+  type: bedrock-agent
+  bedrock_agent_id: 9CTOXQ6R0Y
+  bedrock_agent_alias_id: TOTBOITMLB
+  bedrock_session_attributes:
+    entityId: 1eb4cd7d-0a5f-45e0-be91-b36c0755bf7e
+  bedrock_prompt_session_attributes:
+    currentYear: This is the current year 2025,
+    date: This is today's date for reference 2025-11-07,
+    locale: You must reply in Spanish regardless of the language used in the user's input,
+tests:
+ # 001 - CAMBIO - DATOS PERFIL - Cambiar nombre
+  consulta_cambiar_nombre:
+    steps:
+      - El usuario dice quiero cambiar el nombre de mi cuenta
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar nombre
+    max_turns: 10
+    test_case_key: PACONW-T270
+
+  # 002 - CAMBIO - DATOS PERFIL - Actualizar nombre
+  consulta_actualizar_nombre:
+    steps:
+      - El usuario pregunta que necesito para actualizar mi nombre
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar nombre
+    max_turns: 10
+    test_case_key: PACONW-T271
+
+  # 003 - CAMBIO - DATOS PERFIL - Cambiar email sin acceso
+  consulta_cambiar_email_sin_acceso:
+    steps:
+      - El usuario dice quiero cambiar el email en mi cuenta ya que es antiguo y no tengo acceso a la cuenta
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar email
+    max_turns: 10
+    test_case_key: PACONW-T272
+
+  # 004 - CAMBIO - DATOS PERFIL - Dos cuentas un email
+  consulta_dos_cuentas_un_email:
+    steps:
+      - El usuario pregunta puedo tener dos cuentas de LATAM asociadas a un email
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar email
+    max_turns: 10
+    test_case_key: PACONW-T273
+
+  # 005 - CAMBIO - DATOS PERFIL - Actualizar email
+  consulta_actualizar_email:
+    steps:
+      - El usuario dice quiero actualizar mi email
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar email
+    max_turns: 10
+    test_case_key: PACONW-T274
+
+  # 006 - CAMBIO - DATOS PERFIL - Actualizar teléfono
+  consulta_actualizar_telefono:
+    steps:
+      - El usuario dice quiero actualizar mi teléfono
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar teléfono
+    max_turns: 10
+    test_case_key: PACONW-T275
+
+  # 007 - CAMBIO - DATOS PERFIL - Actualizar país
+  consulta_actualizar_pais:
+    steps:
+      - El usuario dice necesito cambiar el país de residencia asociado a mi cuenta
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar país en mis datos
+    max_turns: 10
+    test_case_key: PACONW-T276
+
+  # 008 - CAMBIO - DATOS PERFIL - Documentación país
+  consulta_documentacion_pais:
+    steps:
+      - El usuario pregunta que documentación necesito para cambiar el país de residencia de mi cuenta
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    initial_prompt: Cambiar país en mis datos
+    max_turns: 10
+    test_case_key: PACONW-T277
+
+  # 009 - CAMBIO - DATOS PERFIL - Cerrar cuenta
+  consulta_cerrar_cuenta:
+    steps:
+      - El usuario dice quiero cerrar mi cuenta de socio con LATAM
+      - El usuario confirma una de las opciones brindadas por el agente
+      - El usuario indica que no tiene más preguntas
+    expected_results:
+      - El agente debe indicar si el cambio es en el perfil LATAM o en el ticket según la consulta del usuario
+      - El agente presenta ambas opciones para que el usuario elija
+      - El agente debe indicar que <categories> sea "PROFILE_DATA_CHANGE" y <next_action> sea "information"
+      - El agente transfiere a encuesta (survey)
+    max_turns: 10
+    test_case_key: PACONW-T278
