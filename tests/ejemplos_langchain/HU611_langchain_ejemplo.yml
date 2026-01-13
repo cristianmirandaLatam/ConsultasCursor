@@ -2,7 +2,6 @@ evaluator:
   model: claude-3_5
   aws_region: us-east-1
   aws_profile: Asistente
-
 # ============================================
 # CONFIGURACIÓN PARA LANGCHAIN
 # ============================================
@@ -20,8 +19,6 @@ target:
     conversationId: "convId448"
     date: "This is today's date 2026-01-07"
     ICULocale: "You must reply in ES regardless of the language used in the user's input"
-
-# Variables globales - IGUAL QUE ANTES
 vars_glob:
   vueloTitularCris:
     vuelo: "LA226"
@@ -35,8 +32,6 @@ vars_glob:
     apellido: "Miranda"
   vueloWilliam:
     entityId: "3627d565-35f7-4531-9ef0-49830112263f"
-
-# Tests - IGUAL QUE ANTES
 tests:
   "01.consulta_tarifa_equipaje":
     steps:
@@ -48,7 +43,6 @@ tests:
       - El agente debe indicar que <categories> sea "BAGGAGE_ALLOWANCE" y <next_action> sea "information"
       - El agente debe derivar a encuesta (survey)
     max_turns: 6
-    # Si un test necesita override de session attributes:
     session_attributes:
       entityId: "{{ vars_glob.vueloWilliam.entityId }}"
     test_case_key: PACONW-T674
