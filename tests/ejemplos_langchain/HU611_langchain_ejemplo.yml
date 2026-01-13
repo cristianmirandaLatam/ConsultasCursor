@@ -1,0 +1,55 @@
+evaluator:
+  model: claude-3_5
+  aws_region: us-east-1
+  aws_profile: Asistente
+
+# ============================================
+# CONFIGURACIÓN PARA LANGCHAIN
+# ============================================
+target:
+  type: langchain-agent
+  agent_endpoint: https://tu-api-langchain.com/agent  # ← Cambia por tu URL real
+  session_attributes:
+    # Combina todos los atributos que antes estaban en:
+    # - bedrock_session_attributes
+    # - bedrock_prompt_session_attributes
+    entityId: "4adce9f0-ebba-4e55-97ba-85160e64f4f2"
+    country: "CL"
+    language_code: "es-us"
+    environment: "STG"
+    conversationId: "convId448"
+    date: "This is today's date 2026-01-07"
+    ICULocale: "You must reply in ES regardless of the language used in the user's input"
+
+# Variables globales - IGUAL QUE ANTES
+vars_glob:
+  vueloTitularCris:
+    vuelo: "LA226"
+    fecha: "25 de febrero de 2026"
+    fecha2: "26 de febrero de 2026"
+    entityId: "96d61623-a69a-4ee5-9d26-d3cde7f8bc54"
+    record_orders_ids: '{"LA0458486AEMD": "2026-02-25"}'
+    quantity_orders: "1"
+    cod_reserva: "CGIESL"
+    cod_reserva2: "GZDPTO"
+    apellido: "Miranda"
+  vueloWilliam:
+    entityId: "3627d565-35f7-4531-9ef0-49830112263f"
+
+# Tests - IGUAL QUE ANTES
+tests:
+  "01.consulta_tarifa_equipaje":
+    steps:
+      - El usuario quiere saber cuál es la tarifa asociada a su equipaje según su orden de vuelo
+      - El usuario dice que ya no tiene más preguntas
+    expected_results:
+      - El agente indica que el equipaje permitido varía según la tarifa adquirida y ofrece detalles según la orden de vuelo proporcionada
+      - El agente pregunta si el usuario tiene dudas o consultas
+      - El agente debe indicar que <categories> sea "BAGGAGE_ALLOWANCE" y <next_action> sea "information"
+      - El agente debe derivar a encuesta (survey)
+    max_turns: 6
+    # Si un test necesita override de session attributes:
+    session_attributes:
+      entityId: "{{ vars_glob.vueloWilliam.entityId }}"
+    test_case_key: PACONW-T674
+

@@ -35,7 +35,7 @@ class BedrockAgentTarget(Boto3Target):
         self._session_id = session_id or str(uuid.uuid4())
 
     def _buscar_conv_id_json(self, data):
-        # Recursivo: busca "genesysConversationId" o "conversation_id"
+        
         if isinstance(data, dict):
             for k, v in data.items():
                 if k in ("genesysConversationId", "conversation_id") and isinstance(v, str):

@@ -1,4 +1,75 @@
-.env
-.agenteval_runs/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv
+venv/
+ENV/
+
+# Entornos y credenciales
+.env
+*.env
+!env.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Agent Evaluation outputs
+.agenteval_runs/
+agenteval_traces/
+
+# Logs
+logs/
+*.log
+
+# Test outputs
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jira attachments temporal
+*_summary.md
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
