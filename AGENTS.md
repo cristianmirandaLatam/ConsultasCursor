@@ -74,6 +74,18 @@ Jira (opcional): `JIRA_BASE_URL`, `JIRA_USERNAME`, `JIRA_TOKEN`, `TEST_CYCLE`.
 
 Sin credenciales AWS, `agenteval run` falla con `Unable to locate credentials` en el resumen/trace.
 
+### Modo sin credenciales AWS (desarrollo local / Cloud)
+
+Puedes validar el entorno sin secretos:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+python3 mock_langchain_server.py   # en tmux o terminal aparte
+./scripts/verify_local_env.sh
+```
+
+Eso comprueba dependencias, sintaxis, CLIs y (si el mock está arriba) el target LangChain. No sustituye una corrida E2E con Bedrock.
+
 ### Notas no obvias
 
 - El paquete pip `agent-evaluation` coexiste con el código vendoreado en `./agenteval`. `agente-evaluador.py` importa el **local** y fija `PYTHONPATH` al invocar `python -m agenteval run`.
