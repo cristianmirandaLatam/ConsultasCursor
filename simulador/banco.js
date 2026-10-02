@@ -3,13 +3,36 @@
    y al estilo del examen de muestra. No son ítems oficiales del ISTQB. */
 (function () {
   function q(lo, k, puntos, elegir, enunciado, opciones, correctas, porque) {
-    return { lo: lo, k: k, puntos: puntos, elegir: elegir, enunciado: enunciado, opciones: opciones, correctas: correctas, porque: porque };
+    return { lo: lo, k: k, puntos: puntos, elegir: elegir, enunciado: enunciado, lista: null, opciones: opciones, correctas: correctas, porque: porque };
+  }
+
+  /* Pregunta con una lista numerada bajo el enunciado (afirmaciones i-v, pares 1-4 / A-D, pasos...).
+     Cada elemento de la lista es [rótulo, texto]. */
+  function ql(lo, k, puntos, elegir, enunciado, lista, opciones, correctas, porque) {
+    var p = q(lo, k, puntos, elegir, enunciado, opciones, correctas, porque);
+    p.lista = lista;
+    return p;
+  }
+
+  var ROM = ["i", "ii", "iii", "iv", "v", "vi"];
+  function afirmaciones(textos) {
+    return textos.map(function (t, i) { return [ROM[i], t]; });
   }
 
   window.BANCO = [
     /* ---------- 1.1.1 Espectro de la IA ---------- */
-    q("1.1.1", "K1", 1, 1,
-      "Relacione cada tecnología (1-4) con su descripción (A-D). 1 IA simbólica. 2 Aprendizaje automático clásico. 3 Aprendizaje profundo. 4 IA generativa. A Aprende características con redes neuronales. B Imita decisiones con reglas y símbolos. C Crea datos nuevos imitando patrones de entrenamiento. D Exige preparación de datos, selección de características y entrenamiento.",
+    ql("1.1.1", "K1", 1, 1,
+      "Relacione cada tecnología (1-4) con su descripción (A-D).",
+      [
+        ["1", "IA simbólica"],
+        ["2", "Aprendizaje automático clásico"],
+        ["3", "Aprendizaje profundo"],
+        ["4", "IA generativa"],
+        ["A", "Aprende características con redes neuronales."],
+        ["B", "Imita decisiones con reglas y símbolos."],
+        ["C", "Crea datos nuevos imitando patrones de entrenamiento."],
+        ["D", "Exige preparación de datos, selección de características y entrenamiento."]
+      ],
       [
         "1D, 2B, 3C, 4A",
         "1B, 2D, 3A, 4C",
@@ -526,8 +549,18 @@
       [3],
       "Meter evaluaciones o resultados falsos en el entrenamiento es envenenamiento de datos. Los otros tres vectores actúan de otra forma: puertas traseras en el uso, extracción de datos de entrenamiento o perturbación de la salida al ejecutar."),
 
-    q("3.2.2", "K2", 1, 1,
-      "Relacione cada vector (1-4) con el ejemplo (A-D). 1 Manipulación del contexto. 2 Manipulación de solicitudes. 3 Envenenamiento de datos. 4 Generación de código malicioso. A Altera en el ajuste fino los enlaces de trazabilidad para que los casos salgan mal. B Induce con prompts engañosos a guiones con fallos de seguridad ocultos. C Con prompts enormes y preparados hace que el modelo suelte claves de API de proyectos viejos. D Cuela capturas modificadas para que el análisis visual ignore defectos reales de la interfaz.",
+    ql("3.2.2", "K2", 1, 1,
+      "Relacione cada vector de ataque (1-4) con el ejemplo (A-D).",
+      [
+        ["1", "Manipulación del contexto"],
+        ["2", "Manipulación de solicitudes"],
+        ["3", "Envenenamiento de datos"],
+        ["4", "Generación de código malicioso"],
+        ["A", "Altera en el ajuste fino los enlaces de trazabilidad para que los casos salgan mal."],
+        ["B", "Induce con prompts engañosos a guiones con fallos de seguridad ocultos."],
+        ["C", "Con prompts enormes y preparados hace que el modelo suelte claves de API de proyectos viejos."],
+        ["D", "Cuela capturas modificadas para que el análisis visual ignore defectos reales de la interfaz."]
+      ],
       [
         "1C, 2D, 3A, 4B",
         "1B, 2D, 3A, 4C",
@@ -892,6 +925,290 @@
         "Nadie verifica las salidas: el director confía solo en la IA y el probador deja de diseñar."
       ],
       [1],
-      "Guiar y verificar es del probador. La estrategia, el riesgo y la supervisión del proceso, equilibrando personas e IA, siguen siendo de quien dirige la prueba.")
+      "Guiar y verificar es del probador. La estrategia, el riesgo y la supervisión del proceso, equilibrando personas e IA, siguen siendo de quien dirige la prueba."),
+
+    /* ==========================================================
+       Formatos combinados, como en el examen de muestra:
+       afirmaciones (i-v) con opciones que las combinan, y «elija DOS» con cinco opciones.
+       ========================================================== */
+
+    ql("1.1.2", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-v) sobre la tokenización y la ventana de contexto son CORRECTAS?",
+      afirmaciones([
+        "La tokenización divide el texto en unidades más pequeñas que el modelo usa para entender y generar lenguaje.",
+        "La ventana de contexto es la cantidad de tokens que el modelo puede tener en cuenta a la vez.",
+        "Ampliar la ventana de contexto da acceso al modelo a documentos que no se incluyeron en la entrada.",
+        "Si la entrada supera la ventana, los tokens que no caben se descartan y pueden perderse detalles.",
+        "La tokenización es el paso que convierte cada token en un vector de alta dimensión."
+      ]),
+      [
+        "i, ii y iv",
+        "i, iii y v",
+        "ii, iii y iv",
+        "i, iv y v"
+      ],
+      [0],
+      "Tokenizar es partir el texto en piezas (i). La ventana acota cuántos tokens se consideran a la vez (ii) y, si se supera, lo que sobra se descarta (iv). Ampliarla no da acceso a documentos que no se pasaron (iii es falsa) y convertir tokens en vectores es una incrustación, no la tokenización (v es falsa)."),
+
+    ql("1.1.3", "K2", 1, 1,
+      "En el contexto de la prueba de software, ¿cuáles de las siguientes afirmaciones (i-v) sobre los LLM fundacionales, ajustados por instrucciones y de razonamiento son CORRECTAS?",
+      afirmaciones([
+        "Un LLM fundacional, sin entrada estructurada, es la mejor opción para producir casos de prueba listos a partir de requisitos de alto nivel.",
+        "Un LLM de razonamiento es adecuado para cruzar informes de defectos, detectar tendencias y proponer prioridades de prueba.",
+        "Un LLM ajustado por instrucciones sigue bien un formato impuesto, como la sintaxis Gherkin.",
+        "Un LLM ajustado por instrucciones decide de forma autónoma, en tiempo real, qué pruebas ejecutar según la opinión de los usuarios.",
+        "Un LLM de razonamiento está pensado para copiar al pie de la letra una plantilla rígida de la organización."
+      ]),
+      [
+        "i, ii y iii",
+        "ii y iii",
+        "i y iv",
+        "iii, iv y v"
+      ],
+      [1],
+      "El modelo de razonamiento sintetiza fuentes y prioriza (ii). El ajustado por instrucciones obedece formatos y reglas como Gherkin (iii). El fundacional no destaca generando casos sin una entrada estructurada (i), el ajustado por instrucciones no toma decisiones autónomas en tiempo real (iv) y el de razonamiento no está hecho para seguir plantillas rígidas (v)."),
+
+    ql("2.1.1", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-v) sobre la estructura de prompt de seis partes son CORRECTAS?",
+      afirmaciones([
+        "El rol indica desde qué perspectiva o especialidad debe responder el modelo.",
+        "Los datos de entrada son el material concreto sobre el que trabajar: registros, requisitos, informes.",
+        "Las restricciones fijan la estructura y el aspecto que debe tener la respuesta.",
+        "El formato de salida define cómo se presenta la respuesta: tabla, lista, Gherkin.",
+        "El contexto es el apartado donde se enumeran las columnas que debe tener la tabla de resultados."
+      ]),
+      [
+        "i, ii y iv",
+        "i, iii y v",
+        "ii, iii y iv",
+        "iii, iv y v"
+      ],
+      [0],
+      "Rol (i), datos de entrada (ii) y formato de salida (iv) están bien descritos. La estructura y el aspecto de la respuesta son formato de salida, no restricciones (iii es falsa), y las columnas de una tabla también pertenecen al formato de salida, no al contexto (v es falsa)."),
+
+    ql("2.1.2", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre técnicas de prompting son CORRECTAS?",
+      afirmaciones([
+        "El prompting con pocos ejemplos (few-shot) guía al modelo con ejemplos de entrada y salida.",
+        "El encadenamiento de prompts divide la tarea en varios prompts cuyas salidas alimentan a los siguientes.",
+        "El meta-prompting consiste en que el probador reescriba el prompt a mano después de cada respuesta.",
+        "En el meta-prompting el propio modelo participa en generar o refinar sus prompts."
+      ]),
+      [
+        "i, ii y iv",
+        "i y iii",
+        "ii y iii",
+        "iii y iv"
+      ],
+      [0],
+      "Few-shot aporta ejemplos (i), el encadenamiento parte la tarea en pasos enlazados (ii) y el meta-prompting hace que el modelo refine sus propios prompts (iv). Reescribir el prompt a mano es ajuste manual, no meta-prompting (iii es falsa)."),
+
+    ql("2.1.3", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre el prompt de sistema y el prompt de usuario son CORRECTAS?",
+      afirmaciones([
+        "El prompt de sistema establece el marco de comportamiento del modelo para toda la conversación.",
+        "El prompt de usuario contiene las preguntas o instrucciones concretas de cada turno.",
+        "El prompt de sistema se ajusta de forma automática con cada mensaje del usuario.",
+        "El prompt de usuario es el que fija las reglas globales de la sesión."
+      ]),
+      [
+        "i y ii",
+        "i y iv",
+        "ii y iii",
+        "iii y iv"
+      ],
+      [0],
+      "El prompt de sistema fija el marco de toda la sesión (i) y el de usuario lleva la petición de cada turno (ii). El de sistema no cambia con cada mensaje (iii) y las reglas globales no las pone el prompt de usuario (iv)."),
+
+    ql("2.2.1", "K3", 2, 1,
+      "La especificación de una API está estable y ya fue revisada. Debe aplicar este enfoque con encadenamiento de prompts: generar casos de prueba, clasificarlos por riesgo para la suite de regresión e identificar los puntos de acceso (endpoints) que quedan sin cubrir. ¿Qué secuencia de pasos (i-v) aplica mejor la técnica?",
+      afirmaciones([
+        "Enviar la especificación al LLM y pedirle que genere casos de prueba a partir de ella.",
+        "Entregar al LLM los casos generados, con el contexto necesario, y pedirle que los clasifique por riesgo para la suite de regresión.",
+        "Entregar al LLM los casos clasificados y la lista de endpoints, y pedirle que indique cuáles quedan sin cubrir.",
+        "Enviar la especificación al LLM y pedirle, en un solo paso, casos ya clasificados por riesgo y la lista de endpoints no cubiertos.",
+        "Enviar la especificación al LLM y pedirle que detecte contradicciones entre endpoints."
+      ]),
+      [
+        "i, ii y iii",
+        "iv y iii",
+        "i, iii y v",
+        "v y iv"
+      ],
+      [0],
+      "El encadenamiento parte el objetivo en pasos cuya salida alimenta al siguiente: generar (i), clasificar lo generado (ii) y analizar cobertura sobre lo clasificado (iii). Pedir todo en un solo prompt (iv) no es encadenar, y buscar contradicciones (v) no forma parte del encargo porque la especificación ya fue revisada."),
+
+    ql("2.3.1", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre las métricas para evaluar las salidas de un LLM en tareas de prueba son CORRECTAS?",
+      afirmaciones([
+        "La exactitud y la completitud comparan lo generado con los requisitos.",
+        "La diversidad mide si los casos cubren escenarios variados en lugar de repetir el mismo camino.",
+        "La tasa de éxito en la ejecución sirve para valorar los guiones de prueba generados.",
+        "La relevancia se mide contando los tokens que tiene la respuesta."
+      ]),
+      [
+        "i, ii y iii",
+        "i, ii y iv",
+        "ii y iv",
+        "i y iv"
+      ],
+      [0],
+      "Exactitud y completitud frente a requisitos (i), diversidad de escenarios (ii) y tasa de éxito al ejecutar guiones (iii) son métricas del programa. La relevancia valora si la salida responde al contexto; no depende del número de tokens (iv es falsa)."),
+
+    ql("3.1.1", "K1", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre alucinaciones y errores de razonamiento son CORRECTAS?",
+      afirmaciones([
+        "Una alucinación es una salida incorrecta o irrelevante que el modelo presenta como válida.",
+        "Un error de razonamiento ocurre cuando el modelo falla al seguir un proceso lógico de varios pasos.",
+        "Las alucinaciones solo aparecen cuando el prompt está en un idioma distinto del inglés.",
+        "Un sesgo heredado de los datos de entrenamiento es lo mismo que una alucinación."
+      ]),
+      [
+        "i y ii",
+        "i y iii",
+        "ii y iv",
+        "iii y iv"
+      ],
+      [0],
+      "La alucinación es contenido inventado o incorrecto presentado como válido (i); el error de razonamiento es un fallo en la cadena lógica (ii). El idioma no define la alucinación (iii) y el sesgo es un riesgo distinto (iv)."),
+
+    ql("3.2.1", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre privacidad de datos al usar IA generativa en la prueba son CORRECTAS?",
+      afirmaciones([
+        "Las salidas de un LLM pueden exponer datos sensibles sin que nadie lo pretenda.",
+        "Las herramientas de IA generativa pueden almacenar y procesar datos sensibles sin consentimiento explícito.",
+        "Usar herramientas sin cumplir normas como el RGPD puede acarrear disputas legales.",
+        "Si un LLM alucina al generar datos sintéticos, es probable que exponga datos reales, sin importar con qué fue entrenado."
+      ]),
+      [
+        "i, ii y iii",
+        "i, ii y iv",
+        "ii, iii y iv",
+        "i y iv"
+      ],
+      [0],
+      "Exposición involuntaria (i), almacenamiento sin consentimiento (ii) e incumplimiento normativo (iii) son las preocupaciones del programa. Una alucinación es contenido inventado; no implica que se filtren datos reales con independencia del entrenamiento (iv es falsa)."),
+
+    ql("3.3.1", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre el consumo de energía y las emisiones de CO₂ de los LLM son CORRECTAS?",
+      afirmaciones([
+        "Generar imágenes consume bastante más energía que generar texto por su mayor complejidad computacional.",
+        "Una búsqueda con IA generativa consume más energía que una búsqueda web tradicional.",
+        "Una tarea de texto consume tan poco que millones de usuarios no suman un consumo relevante.",
+        "El consumo de energía de los LLM se traduce en emisiones de CO₂."
+      ]),
+      [
+        "i, ii y iv",
+        "i y iii",
+        "ii y iii",
+        "iii y iv"
+      ],
+      [0],
+      "La imagen cuesta mucho más que el texto (i), la búsqueda con IA generativa gasta más que la tradicional (ii) y ese consumo se traduce en CO₂ (iv). A escala de millones de usuarios, el texto sí suma un consumo relevante (iii es falsa)."),
+
+    ql("4.1.2", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre la generación aumentada por recuperación (RAG) son CORRECTAS?",
+      afirmaciones([
+        "RAG recupera información pertinente de una fuente externa, por ejemplo una base vectorial, antes de generar.",
+        "La información recuperada se combina con la consulta del usuario para formar el prompt que recibe el LLM.",
+        "RAG sustituye al entrenamiento del modelo y por eso elimina por completo las alucinaciones.",
+        "RAG ayuda a que las respuestas se alineen con documentación actualizada que el modelo no vio al entrenarse."
+      ]),
+      [
+        "i, ii y iv",
+        "i, ii y iii",
+        "ii y iii",
+        "iii y iv"
+      ],
+      [0],
+      "Recuperar (i), combinar con la consulta (ii) y alinear con documentación vigente (iv) describen RAG. No sustituye al entrenamiento ni garantiza cero alucinaciones; las reduce al anclar la respuesta en fuentes (iii es falsa)."),
+
+    ql("4.2.1", "K2", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre el ajuste fino de un LLM para tareas de prueba son CORRECTAS?",
+      afirmaciones([
+        "El ajuste fino entrena un modelo preentrenado con datos específicos de la tarea.",
+        "El ajuste fino modifica los parámetros del modelo para adaptarlo a un dominio.",
+        "El ajuste fino sustituye el conocimiento general del modelo y garantiza que no habrá sobreajuste.",
+        "El ajuste fino requiere datos de alta calidad para evitar resultados sesgados o inexactos."
+      ]),
+      [
+        "i, ii y iv",
+        "i, ii y iii",
+        "ii y iii",
+        "i y iii"
+      ],
+      [0],
+      "Entrenar con datos de la tarea (i), modificar parámetros (ii) y exigir datos de calidad (iv) es ajuste fino. No sustituye el conocimiento general ni garantiza ausencia de sobreajuste; de hecho, con pocos datos el sobreajuste es un riesgo (iii es falsa)."),
+
+    ql("5.1.1", "K1", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre la IA en la sombra (shadow AI) son CORRECTAS?",
+      afirmaciones([
+        "La IA en la sombra es el uso de herramientas de IA que la organización no ha aprobado.",
+        "La IA en la sombra puede dar lugar a accesos no autorizados a información sensible.",
+        "La IA en la sombra hace cumplir las políticas de datos de la organización.",
+        "La IA en la sombra reduce el riesgo de disputas sobre propiedad intelectual."
+      ]),
+      [
+        "i y ii",
+        "i y iii",
+        "ii y iv",
+        "iii y iv"
+      ],
+      [0],
+      "Herramientas no aprobadas (i) con riesgo de acceso indebido a información sensible (ii). Lejos de hacer cumplir políticas o reducir disputas, las elude y las aumenta (iii y iv son falsas)."),
+
+    ql("5.2.3", "K1", 1, 1,
+      "¿Cuáles de las siguientes afirmaciones (i-iv) sobre los roles tras adoptar IA generativa en la prueba son CORRECTAS?",
+      afirmaciones([
+        "Los probadores pasan de diseñar casos a mano a guiar y verificar el testware generado por IA.",
+        "Los directores de prueba pasan a centrarse en el funcionamiento interno de los LLM.",
+        "Los directores de prueba mantienen la gestión del proyecto e incorporan la estrategia, los riesgos y las competencias en IA generativa.",
+        "Los directores de prueba sustituyen a las personas por IA generativa para ganar productividad."
+      ]),
+      [
+        "i y iii",
+        "i y ii",
+        "ii y iv",
+        "iii y iv"
+      ],
+      [0],
+      "El probador guía y verifica (i); quien dirige sigue gestionando e integra estrategia, riesgos y competencias (iii). No se convierte en experto en arquitectura de modelos (ii) ni reemplaza a las personas (iv)."),
+
+    /* ---------- «Elija DOS» con cinco opciones ---------- */
+    q("3.2.3", "K2", 1, 2,
+      "¿Cuáles DOS de las siguientes medidas mitigan el riesgo de privacidad al probar con IA generativa?",
+      [
+        "Sustituir los datos sensibles por una versión anonimizada o sintética antes de enviarlos al modelo.",
+        "Cifrar los datos de prueba sensibles en tránsito y en reposo.",
+        "Dar al modelo acceso sin restricciones a los datos sensibles para que aprenda mejor.",
+        "Desactivar el cifrado para agilizar el almacenamiento y el envío de datos.",
+        "Usar varios LLM y comparar sus resultados para mejorar la exactitud."
+      ],
+      [0, 1],
+      "Anonimizar y cifrar son mitigaciones de privacidad. El acceso sin restricciones y quitar el cifrado agravan el riesgo. Comparar varios modelos apunta a la exactitud, no a la privacidad."),
+
+    q("4.1.1", "K2", 1, 2,
+      "¿Cuáles DOS afirmaciones sobre los componentes de una aplicación de prueba impulsada por LLM son CORRECTAS?",
+      [
+        "El front-end recoge la entrada de la persona usuaria y muestra la salida.",
+        "El back-end combina la entrada con datos recuperados, parecidos en significado, para armar el prompt.",
+        "El componente de autenticación es el que arma el prompt que recibe el modelo.",
+        "El posprocesamiento es el que recupera documentos de la base vectorial.",
+        "El LLM es el que almacena la base de datos vectorial."
+      ],
+      [0, 1],
+      "El front-end es la interfaz con la persona; el back-end recupera, combina y prepara el prompt. Autenticar no arma prompts, el posprocesamiento trabaja sobre la salida del modelo y la base vectorial es un almacén aparte, no el LLM."),
+
+    q("5.1.2", "K2", 1, 2,
+      "¿Cuáles DOS aspectos son clave al definir una estrategia de IA generativa para la prueba?",
+      [
+        "Elegir LLM que puedan integrarse con los entornos y las herramientas de prueba existentes.",
+        "Definir políticas de uso y de gobernanza de datos para el trabajo con IA generativa.",
+        "Garantizar que cada miembro del equipo obtenga certificaciones específicas de cada LLM que use.",
+        "Acumular la mayor cantidad posible de datos de entrada para aumentar las probabilidades de buenas salidas.",
+        "Medir la eficacia de las salidas con las métricas estándar del aprendizaje supervisado."
+      ],
+      [0, 1],
+      "Integración con lo existente y gobernanza del uso y de los datos son elementos de la estrategia. Las certificaciones por modelo, acumular datos sin criterio y las métricas del aprendizaje supervisado no son los criterios que propone el programa.")
   ];
 })();
