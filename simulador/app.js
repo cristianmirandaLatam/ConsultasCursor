@@ -55,6 +55,7 @@
   var CORTE = 30;
   var CLAVE_HIST = "ctgenai-historial";
   var CLAVE_SESION = "ctgenai-sesion";
+  var CLAVE_PAUSA = "ctgenai-pausado";
 
   var estado = null;
   var reloj = null;
@@ -156,6 +157,17 @@
     sessionStorage.setItem(CLAVE_SESION, JSON.stringify(estado));
   }
 
+  function leerPausado() {
+    try {
+      var p = JSON.parse(localStorage.getItem(CLAVE_PAUSA));
+      return p && p.preguntas && p.respuestas && typeof p.restante === "number" ? p : null;
+    } catch (e) { return null; }
+  }
+
+  function contarRespondidas(respuestas) {
+    return respuestas.filter(function (r) { return r && r.length; }).length;
+  }
+
   function formatear(seg) {
     seg = Math.max(0, seg);
     var m = Math.floor(seg / 60);
@@ -200,13 +212,18 @@
     estado = null;
     sessionStorage.removeItem(CLAVE_SESION);
     var hist = leerHistorial();
+    var pausado = leerPausado();
     var filas = hist.length
       ? hist.map(function (h, i) {
           var revisable = h.preguntas && h.respuestas;
+          var etiqueta = h.incompleto ? "Incompleto" : (h.aprobado ? "Aprobado" : "No aprobado");
+          var detalle = escapar(nombreModo(h.modo));
+          if (h.porTiempo) detalle += " · tiempo agotado";
+          else if (h.incompleto) detalle += " · terminado sin completar";
           return "<li class='intento'>" +
-            "<span class='intento-fecha'>" + escapar(h.fecha) + "<small>" + escapar(nombreModo(h.modo)) + (h.porTiempo ? " · tiempo agotado" : "") + "</small></span>" +
+            "<span class='intento-fecha'>" + escapar(h.fecha) + "<small>" + detalle + "</small></span>" +
             "<strong>" + h.puntos + "/" + TOTAL_PUNTOS + "</strong>" +
-            "<em class='" + (h.aprobado ? "ok" : "mal") + "'>" + (h.aprobado ? "Aprobado" : "No aprobado") + "</em>" +
+            "<em class='" + (h.incompleto ? "neutro" : (h.aprobado ? "ok" : "mal")) + "'>" + etiqueta + "</em>" +
             (revisable
               ? "<button type='button' class='revisar' data-i='" + i + "'>Revisar</button>"
               : "<span class='sin-detalle'>Sin detalle</span>") +
@@ -214,10 +231,25 @@
         }).join("")
       : "<li class='vacio'>Todavía no hay intentos en este navegador.</li>";
 
+    var tarjetaPausa = "";
+    if (pausado) {
+      tarjetaPausa =
+        "<div class='pausado'>" +
+          "<p class='kicker'>Examen en pausa</p>" +
+          "<p><strong>" + escapar(nombreModo(pausado.modo)) + "</strong> · pausado el " + escapar(pausado.fechaPausa || "") +
+          "<br>" + contarRespondidas(pausado.respuestas) + " de 40 respondidas · quedan <strong>" + formatear(pausado.restante) + "</strong> de tiempo.</p>" +
+          "<div class='acciones'>" +
+            "<button type='button' class='primario' id='continuar'>Continuar el examen</button>" +
+            "<button type='button' id='descartar-pausa'>Descartar</button>" +
+          "</div>" +
+        "</div>";
+    }
+
     var nodo = el(
       "<section class='panel inicio'>" +
         "<p class='kicker'>Práctica · ISTQB CT-GenAI</p>" +
         "<h1>Simulador de examen</h1>" +
+        tarjetaPausa +
         "<p class='lead'>Elige cómo quieres rendir. En los dos modos cada intento arma un examen nuevo: una formulación distinta por objetivo de aprendizaje, con las opciones y el orden barajados. Las preguntas son originales, escritas a partir del programa de estudios y del estilo del examen de muestra. No son los ítems oficiales.</p>" +
         "<ul class='reglas'>" +
           "<li><strong>40 preguntas</strong> y <strong>46 puntos</strong>, como el examen.</li>" +
@@ -243,6 +275,15 @@
       "</section>"
     );
     mostrar(nodo);
+    var continuar = nodo.querySelector("#continuar");
+    if (continuar) continuar.addEventListener("click", reanudar);
+    var descartar = nodo.querySelector("#descartar-pausa");
+    if (descartar) descartar.addEventListener("click", function () {
+      if (window.confirm("¿Descartar el examen en pausa? No se guardará ningún resultado.")) {
+        localStorage.removeItem(CLAVE_PAUSA);
+        pantallaInicio();
+      }
+    });
     nodo.querySelectorAll(".revisar").forEach(function (b) {
       b.addEventListener("click", function () {
         var intento = hist[Number(b.getAttribute("data-i"))];
@@ -252,12 +293,55 @@
     function minutosElegidos() {
       return nodo.querySelector("#extra").checked ? 75 : 60;
     }
-    nodo.querySelector("#modo-real").addEventListener("click", function () {
-      empezar(minutosElegidos(), "real");
-    });
-    nodo.querySelector("#modo-prueba").addEventListener("click", function () {
-      empezar(minutosElegidos(), "prueba");
-    });
+    function arrancarNuevo(modo) {
+      if (pausado && !window.confirm("Tienes un examen en pausa. Si empiezas otro, el pausado seguirá guardado para continuarlo después. ¿Empezar un examen nuevo?")) return;
+      empezar(minutosElegidos(), modo);
+    }
+    nodo.querySelector("#modo-real").addEventListener("click", function () { arrancarNuevo("real"); });
+    nodo.querySelector("#modo-prueba").addEventListener("click", function () { arrancarNuevo("prueba"); });
+  }
+
+  function pausar() {
+    if (!estado || estado.cerrado) return;
+    pararReloj();
+    var copia = JSON.parse(JSON.stringify(estado));
+    copia.restante = Math.max(0, restantes());
+    copia.fechaPausa = new Date().toLocaleString("es");
+    delete copia.fin;
+    try {
+      localStorage.setItem(CLAVE_PAUSA, JSON.stringify(copia));
+    } catch (e) {
+      window.alert("No se pudo guardar el examen en pausa: el navegador no tiene espacio. El examen sigue en curso.");
+      arrancarReloj();
+      return;
+    }
+    estado = null;
+    sessionStorage.removeItem(CLAVE_SESION);
+    pantallaInicio();
+  }
+
+  function reanudar() {
+    var pausado = leerPausado();
+    if (!pausado) { pantallaInicio(); return; }
+    estado = pausado;
+    estado.fin = Date.now() + estado.restante * 1000;
+    delete estado.restante;
+    delete estado.fechaPausa;
+    localStorage.removeItem(CLAVE_PAUSA);
+    persistir();
+    if (restantes() <= 0) { cerrarExamen(true); return; }
+    pintarExamen();
+  }
+
+  function confirmarTerminar() {
+    var respondidas = contarRespondidas(estado.respuestas);
+    var corregidas = respondidas === 0 ? "No hay preguntas respondidas: quedará con 0 puntos"
+      : respondidas === 1 ? "Se corregirá la única pregunta respondida"
+      : "Se corregirán las " + respondidas + " preguntas respondidas";
+    var texto = "¿Terminar el examen ahora, sin completarlo?\n\n" +
+      corregidas + " y el intento quedará en el historial como incompleto. " +
+      "Si prefieres seguir en otro momento, usa «Pausar».";
+    if (window.confirm(texto)) cerrarExamen(false, true);
   }
 
   function empezar(minutos, modo) {
@@ -352,7 +436,13 @@
       "<section class='examen'>" +
         "<header class='barra'>" +
           "<div><strong>" + escapar(nombreModo(estado.modo)) + "</strong><span class='meta'>Pregunta " + (estado.indice + 1) + " de 40 · " + p.puntos + (p.puntos === 1 ? " punto" : " puntos") + " · " + p.k + "</span></div>" +
-          "<div class='tiempo' id='tiempo'>" + formatear(restantes()) + "</div>" +
+          "<div class='barra-derecha'>" +
+            "<div class='barra-botones'>" +
+              "<button type='button' class='barra-btn' id='pausar' title='Guardar el examen y detener el tiempo para seguir después'>Pausar</button>" +
+              "<button type='button' class='barra-btn' id='terminar' title='Cerrar el examen ahora y guardarlo como incompleto'>Terminar</button>" +
+            "</div>" +
+            "<div class='tiempo' id='tiempo'>" + formatear(restantes()) + "</div>" +
+          "</div>" +
         "</header>" +
         "<div class='cuerpo'>" +
           "<nav class='mapa' aria-label='Preguntas'>" + celdas + "</nav>" +
@@ -403,6 +493,8 @@
     if (cerrar) cerrar.addEventListener("click", function () { confirmarCierre(); });
     var confirmar = nodo.querySelector("#confirmar");
     if (confirmar) confirmar.addEventListener("click", confirmarRespuesta);
+    nodo.querySelector("#pausar").addEventListener("click", pausar);
+    nodo.querySelector("#terminar").addEventListener("click", confirmarTerminar);
 
     arrancarReloj();
   }
@@ -474,7 +566,7 @@
     if (window.confirm(texto)) cerrarExamen(false);
   }
 
-  function cerrarExamen(porTiempo) {
+  function cerrarExamen(porTiempo, terminadoAntes) {
     if (!estado || estado.cerrado) return;
     estado.cerrado = true;
     pararReloj();
@@ -484,6 +576,8 @@
       puntos: resultado.puntos,
       aprobado: resultado.aprobado,
       porTiempo: porTiempo,
+      incompleto: !!terminadoAntes,
+      respondidas: contarRespondidas(estado.respuestas),
       modo: estado.modo,
       minutos: estado.minutos,
       preguntas: estado.preguntas,
@@ -531,9 +625,17 @@
         "<p>" + escapar(p.enunciado) + "</p>" + htmlLista(p) + "<ol class='repaso-ops'>" + ops + "</ol>" + cierre + "</details>";
     }).join("");
 
+    var cierreTxt = porTiempo ? "el tiempo se agotó" : (intento.incompleto ? "terminado sin completar" : "entregado");
     var kicker = enVivo
-      ? escapar(nombreModo(intento.modo)) + " · " + (porTiempo ? "el tiempo se agotó" : "entregado")
-      : "Repaso del intento · " + escapar(intento.fecha) + " · " + escapar(nombreModo(intento.modo)) + (porTiempo ? " · tiempo agotado" : "");
+      ? escapar(nombreModo(intento.modo)) + " · " + cierreTxt
+      : "Repaso del intento · " + escapar(intento.fecha) + " · " + escapar(nombreModo(intento.modo)) + " · " + cierreTxt;
+    var titulo = intento.incompleto
+      ? "<h1 class='neutro'>Incompleto</h1>"
+      : "<h1 class='" + (resultado.aprobado ? "ok" : "mal") + "'>" + (resultado.aprobado ? "Aprobado" : "No aprobado") + "</h1>";
+    var respondidas = typeof intento.respondidas === "number" ? intento.respondidas : contarRespondidas(intento.respuestas);
+    var notaExtra = intento.incompleto
+      ? " · " + respondidas + " de 40 respondidas" + (resultado.aprobado ? " · con lo respondido ya superas el corte" : "")
+      : "";
     var acciones = enVivo
       ? "<button class='primario' id='otro' type='button'>Nuevo " + (intento.modo === "prueba" ? "examen de prueba" : "examen real") + "</button><button id='inicio' type='button'>Volver al inicio</button>"
       : "<button class='primario' id='inicio' type='button'>Volver al inicio</button><button id='otro' type='button'>Nuevo " + (intento.modo === "prueba" ? "examen de prueba" : "examen real") + "</button>";
@@ -541,8 +643,8 @@
     var nodo = el(
       "<section class='panel resultado'>" +
         "<p class='kicker'>" + kicker + "</p>" +
-        "<h1 class='" + (resultado.aprobado ? "ok" : "mal") + "'>" + (resultado.aprobado ? "Aprobado" : "No aprobado") + "</h1>" +
-        "<p class='nota'>" + resultado.puntos + " / " + TOTAL_PUNTOS + " puntos · el corte es " + CORTE + "</p>" +
+        titulo +
+        "<p class='nota'>" + resultado.puntos + " / " + TOTAL_PUNTOS + " puntos · el corte es " + CORTE + notaExtra + "</p>" +
         "<h2>Por capítulo</h2><ul class='historial'>" + filasCap + "</ul>" +
         "<div class='acciones'>" + acciones + "</div>" +
         "<h2>Repaso</h2>" + repaso +

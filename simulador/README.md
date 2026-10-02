@@ -11,6 +11,8 @@ Los dos modos arman un examen de 40 preguntas y 46 puntos, con el mismo reparto 
 
 Los formatos de pregunta siguen los del examen de muestra: una opción correcta entre cuatro, afirmaciones (i-v) con opciones que las combinan («i, ii y iv»), relacionar elementos (1-4 con A-D) y «elija DOS opciones» entre cinco.
 
+Durante el examen, la barra superior tiene dos botones. **Pausar** detiene el tiempo y guarda el examen en el navegador; desde la pantalla de inicio se puede continuar después, con el tiempo que quedaba, o descartarlo. **Terminar** cierra el examen en ese momento: se corrige lo respondido y el intento queda en el historial como incompleto.
+
 Cada intento entregado queda en el historial de la pantalla de inicio con el examen completo. Con «Revisar» se vuelve a abrir: preguntas, respuestas dadas, respuestas correctas y, en cada opción, por qué es correcta o por qué no lo es. En el examen de prueba esa misma justificación aparece al confirmar la respuesta.
 
 ## Cómo abrirlo

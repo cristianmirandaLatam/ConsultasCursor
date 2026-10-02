@@ -68,6 +68,10 @@ button.modo:hover, button.modo:focus-visible { border-color: var(--azul); backgr
 .lista .rotulo { font-weight: 700; min-width: 1.8rem; color: var(--azul); }
 .ok { color: var(--ok); }
 .mal { color: var(--mal); }
+.neutro { color: var(--aviso); }
+.pausado { border: 1px solid #e3c98a; background: #fff8e6; border-radius: 12px; padding: 0.9rem 1rem 1rem; margin: 0.6rem 0 1rem; }
+.pausado .kicker { color: var(--aviso); }
+.pausado p { margin: 0.3rem 0 0.6rem; }
 
 .examen { min-height: 100vh; display: flex; flex-direction: column; }
 .barra {
@@ -77,6 +81,10 @@ button.modo:hover, button.modo:focus-visible { border-color: var(--azul); backgr
 .barra .meta { display: block; font-weight: 400; opacity: 0.85; font-size: 0.85rem; }
 .tiempo { font-variant-numeric: tabular-nums; font-size: 1.4rem; font-weight: 700; background: rgba(255,255,255,0.12); padding: 0.2rem 0.6rem; border-radius: 8px; }
 .tiempo.urgente { background: var(--mal); }
+.barra-derecha { display: flex; align-items: center; gap: 0.6rem; }
+.barra-botones { display: flex; gap: 0.4rem; }
+.barra-btn { background: rgba(255,255,255,0.12); color: white; border-color: rgba(255,255,255,0.35); padding: 0.4rem 0.75rem; font-size: 0.9rem; }
+.barra-btn:hover, .barra-btn:focus-visible { background: rgba(255,255,255,0.25); }
 .cuerpo { display: grid; grid-template-columns: 220px 1fr; gap: 1rem; padding: 1rem; max-width: 1100px; margin: 0 auto; width: 100%; }
 .mapa { display: flex; flex-wrap: wrap; gap: 0.35rem; align-content: flex-start; }
 .celda { width: 2.3rem; height: 2.3rem; padding: 0; border-radius: 6px; }
@@ -129,6 +137,8 @@ summary { cursor: pointer; }
 
 @media (max-width: 800px) {
   .cuerpo { grid-template-columns: 1fr; }
+  .barra { flex-wrap: wrap; }
+  .barra-derecha { width: 100%; justify-content: space-between; }
   .mapa { position: sticky; top: 0; background: var(--fondo); padding-bottom: 0.4rem; z-index: 2; }
   .panel { margin: 0.6rem; }
   .modos { grid-template-columns: 1fr; }
