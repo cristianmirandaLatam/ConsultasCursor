@@ -15,14 +15,35 @@ Durante el examen, la barra superior tiene dos botones. **Pausar** detiene el ti
 
 Cada intento entregado queda en el historial de la pantalla de inicio con el examen completo. Con «Revisar» se vuelve a abrir: preguntas, respuestas dadas, respuestas correctas y, en cada opción, por qué es correcta o por qué no lo es. En el examen de prueba esa misma justificación aparece al confirmar la respuesta.
 
-## Cómo abrirlo
+## Cómo usarlo en el celular, el iPad o el computador
 
-Desde la raíz del repositorio:
+Esta carpeta es el sitio completo: al publicarla como repositorio propio, `index.html` queda en la raíz y GitHub Pages lo sirve tal cual.
+
+1. En GitHub, crea un repositorio **público** nuevo (por ejemplo `simulador-ct-genai`), sin README.
+2. Desde esta carpeta:
+
+```bash
+git init
+git add .
+git commit -m "Simulador CT-GenAI"
+git branch -M main
+git remote add origin https://github.com/cristianmirandaLatam/simulador-ct-genai.git
+git push -u origin main
+```
+
+3. En ese repositorio: Settings → Pages → Build and deployment → Source: **Deploy from a branch** → rama `main`, carpeta `/ (root)` → Save.
+4. En uno o dos minutos queda en `https://cristianmirandalatam.github.io/simulador-ct-genai/`.
+
+En el iPhone o el iPad, abre esa dirección con Safari, pulsa Compartir y elige **Añadir a pantalla de inicio**. Queda con icono y se abre a pantalla completa. En Android, Chrome ofrece «Instalar aplicación» o «Añadir a pantalla principal».
+
+El historial de intentos y el examen en pausa se guardan en el navegador de cada dispositivo. Lo que rindes en el teléfono no aparece en el computador.
+
+## Cómo abrirlo en local
+
+Dentro de esta carpeta:
 
 ```bash
 python3 -m http.server 8765
 ```
 
-y entrar en `http://localhost:8765/simulador/`.
-
-El historial de intentos y el examen en curso se guardan en el navegador (localStorage y sessionStorage).
+y entrar en `http://localhost:8765/`.
