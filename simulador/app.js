@@ -90,6 +90,7 @@
         enunciado: elegida.enunciado,
         lista: elegida.lista || null,
         opciones: orden.map(function (i) { return elegida.opciones[i]; }),
+        porques: elegida.porques ? orden.map(function (i) { return elegida.porques[i]; }) : null,
         correctas: correctas,
         porque: elegida.porque
       };
@@ -276,18 +277,29 @@
     pintarExamen();
   }
 
+  function htmlPorqueOpcion(p, i) {
+    if (!p.porques || !p.porques[i]) return "";
+    var correcta = p.correctas.indexOf(i) !== -1;
+    return "<p class='porque-op'><strong>" + (correcta ? "Es correcta. " : "No es correcta. ") + "</strong>" + escapar(p.porques[i]) + "</p>";
+  }
+
   function htmlCorreccion(p, marca) {
     var bien = mismoConjunto(marca, p.correctas);
-    var buenas = p.correctas.map(function (i) {
-      return "<li><span class='letra'>" + letra(i) + "</span><span>" + escapar(p.opciones[i]) + "</span></li>";
-    }).join("");
     var suyas = marca.length ? marca.map(letra).join(", ") : "ninguna";
+    var detalle = "";
+    if (!p.porques) {
+      var buenas = p.correctas.map(function (i) {
+        return "<li><span class='letra'>" + letra(i) + "</span><span>" + escapar(p.opciones[i]) + "</span></li>";
+      }).join("");
+      detalle = "<p>" + (p.correctas.length > 1 ? "Las respuestas correctas son:" : "La respuesta correcta es:") + "</p>" +
+        "<ul class='correctas-lista'>" + buenas + "</ul>" +
+        "<p class='porque'><strong>Por qué. </strong>" + escapar(p.porque) + "</p>";
+    }
     return "<div class='correccion " + (bien ? "ok" : "mal") + "' id='correccion' role='status'>" +
       "<p class='correccion-titulo'>" + (bien ? "Correcta" : "Incorrecta") + "</p>" +
       (bien ? "" : "<p>Marcaste " + escapar(suyas) + ".</p>") +
-      "<p>" + (p.correctas.length > 1 ? "Las respuestas correctas son:" : "La respuesta correcta es:") + "</p>" +
-      "<ul class='correctas-lista'>" + buenas + "</ul>" +
-      "<p class='porque'><strong>Por qué. </strong>" + escapar(p.porque) + "</p>" +
+      (p.porques ? "<p>Cada opción indica por qué es correcta o por qué no lo es.</p>" : "") +
+      detalle +
     "</div>";
   }
 
@@ -307,9 +319,10 @@
       } else if (activo) {
         cls += " activa";
       }
-      return "<label class='" + cls + "'>" +
+      return "<div class='opcion-bloque'><label class='" + cls + "'>" +
         "<input type='" + tipo + "' name='op' value='" + i + "'" + (activo ? " checked" : "") + (revelada ? " disabled" : "") + ">" +
-        "<span class='letra'>" + letra(i) + "</span><span>" + escapar(texto) + "</span></label>";
+        "<span class='letra'>" + letra(i) + "</span><span>" + escapar(texto) + "</span></label>" +
+        (revelada ? htmlPorqueOpcion(p, i) : "") + "</div>";
     }).join("");
 
     var celdas = estado.preguntas.map(function (preg, i) {
@@ -507,12 +520,15 @@
       var buenas = p.correctas.map(letra).join(", ");
       var ops = p.opciones.map(function (t, k) {
         var cls = p.correctas.indexOf(k) !== -1 ? "buena" : (d.marca.indexOf(k) !== -1 ? "mala" : "");
-        return "<li class='" + cls + "'><span class='letra'>" + letra(k) + "</span> " + escapar(t) + "</li>";
+        return "<li class='" + cls + "'><div class='op-linea'><span class='letra'>" + letra(k) + "</span><span>" + escapar(t) + "</span></div>" + htmlPorqueOpcion(p, k) + "</li>";
       }).join("");
+      var cierre = (p.porques && p.porques.length)
+        ? ""
+        : "<p class='porque'><strong>Por qué. </strong>" + escapar(p.porque) + "</p>";
       return "<details" + (d.bien ? "" : " open") + ">" +
         "<summary><span class='pill " + (d.bien ? "ok" : "mal") + "'>" + (d.bien ? "Bien" : "Mal") + "</span> " +
         (i + 1) + ". GenAI-" + escapar(p.lo) + " · " + p.k + " · " + p.puntos + " pt · su respuesta: " + suyas + " · correcta: " + buenas + "</summary>" +
-        "<p>" + escapar(p.enunciado) + "</p>" + htmlLista(p) + "<ol class='repaso-ops'>" + ops + "</ol><p class='porque'><strong>Por qué. </strong>" + escapar(p.porque) + "</p></details>";
+        "<p>" + escapar(p.enunciado) + "</p>" + htmlLista(p) + "<ol class='repaso-ops'>" + ops + "</ol>" + cierre + "</details>";
     }).join("");
 
     var kicker = enVivo

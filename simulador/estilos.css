@@ -32,6 +32,7 @@ button.primario { background: var(--azul); color: white; border-color: var(--azu
 h1 { font-size: 1.7rem; line-height: 1.25; margin: 0.2rem 0 0.8rem; }
 h2 { font-size: 1.05rem; margin: 1.4rem 0 0.5rem; }
 .panel { max-width: 760px; margin: 2rem auto; background: var(--papel); padding: 1.6rem 1.5rem 2rem; border-radius: 14px; border: 1px solid var(--linea); }
+.resultado { max-width: 860px; }
 .kicker { color: var(--azul); font-weight: 700; letter-spacing: 0.02em; margin: 0; text-transform: uppercase; font-size: 0.78rem; }
 .lead { color: var(--tinta); }
 .reglas { padding-left: 1.1rem; }
@@ -94,6 +95,11 @@ button.modo:hover, button.modo:focus-visible { border-color: var(--azul); backgr
 .opcion.mala { border-color: var(--mal); background: #fdecec; }
 .opcion.bloqueada { cursor: default; }
 .opcion input { margin-top: 0.25rem; }
+.opcion-bloque { margin: 0.45rem 0; }
+.opcion-bloque .opcion { margin: 0; }
+.porque-op { margin: 0.28rem 0 0 0.15rem; font-size: 0.92rem; line-height: 1.4; }
+.repaso-ops .op-linea { display: flex; gap: 0.45rem; align-items: flex-start; }
+.repaso-ops .porque-op { margin: 0.3rem 0 0.15rem 1.65rem; }
 .pista { color: var(--suave); font-size: 0.92rem; margin: 0.7rem 0 0; }
 .correccion { border-radius: 10px; padding: 0.75rem 0.85rem; margin-top: 0.85rem; color: var(--tinta); }
 .correccion.ok { background: #e5f6ee; border: 1px solid #b7e4cd; }
