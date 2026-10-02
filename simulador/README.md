@@ -2,7 +2,12 @@
 
 Aplicación de un solo directorio para ensayar el examen ISTQB® Certified Tester – Testing with Generative AI.
 
-Cada intento construye un examen de 40 preguntas y 46 puntos, con el mismo reparto de objetivos de aprendizaje, niveles K y puntos que el examen de muestra (se aprueba con 30 puntos, en 60 minutos, u 75 con el tiempo adicional). Las preguntas son formulaciones originales a partir del programa de estudios y del estilo del examen de muestra: no son los ítems oficiales y no sirven para un examen real.
+En la pantalla de inicio se elige el modo:
+
+- **Examen real.** 40 preguntas, sin comentarios mientras se responde. La nota y la corrección aparecen al entregar.
+- **Examen de prueba.** Al confirmar cada respuesta se muestra enseguida cuál es la correcta y por qué. La respuesta queda fija después de confirmarla.
+
+Los dos modos arman un examen de 40 preguntas y 46 puntos, con el mismo reparto de objetivos de aprendizaje, niveles K y puntos que el examen de muestra (se aprueba con 30 puntos, en 60 minutos, u 75 con el tiempo adicional). Las preguntas son formulaciones originales a partir del programa de estudios y del estilo del examen de muestra: no son los ítems oficiales y no sirven para un examen real.
 
 ## Cómo abrirlo
 

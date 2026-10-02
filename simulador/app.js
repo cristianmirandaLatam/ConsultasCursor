@@ -168,6 +168,10 @@
   }
 
   /* ---------- pantallas ---------- */
+  function nombreModo(modo) {
+    return modo === "prueba" ? "Examen de prueba" : "Examen real";
+  }
+
   function pantallaInicio() {
     pararReloj();
     estado = null;
@@ -175,7 +179,7 @@
     var hist = leerHistorial();
     var filas = hist.length
       ? hist.map(function (h) {
-          return "<li><span>" + escapar(h.fecha) + "</span><strong>" + h.puntos + "/" + TOTAL_PUNTOS + "</strong><em class='" + (h.aprobado ? "ok" : "mal") + "'>" + (h.aprobado ? "Aprobado" : "No aprobado") + "</em></li>";
+          return "<li><span>" + escapar(h.fecha) + " · " + escapar(nombreModo(h.modo)) + "</span><strong>" + h.puntos + "/" + TOTAL_PUNTOS + "</strong><em class='" + (h.aprobado ? "ok" : "mal") + "'>" + (h.aprobado ? "Aprobado" : "No aprobado") + "</em></li>";
         }).join("")
       : "<li class='vacio'>Todavía no hay intentos en este navegador.</li>";
 
@@ -183,7 +187,7 @@
       "<section class='panel inicio'>" +
         "<p class='kicker'>Práctica · ISTQB CT-GenAI</p>" +
         "<h1>Simulador de examen</h1>" +
-        "<p class='lead'>Cada intento arma un examen nuevo: una formulación distinta por objetivo de aprendizaje, con las opciones y el orden barajados. Las preguntas son originales, escritas a partir del programa de estudios y del estilo del examen de muestra. No son los ítems oficiales.</p>" +
+        "<p class='lead'>Elige cómo quieres rendir. En los dos modos cada intento arma un examen nuevo: una formulación distinta por objetivo de aprendizaje, con las opciones y el orden barajados. Las preguntas son originales, escritas a partir del programa de estudios y del estilo del examen de muestra. No son los ítems oficiales.</p>" +
         "<ul class='reglas'>" +
           "<li><strong>40 preguntas</strong> y <strong>46 puntos</strong>, como el examen.</li>" +
           "<li>Se aprueba con <strong>30 puntos</strong> (65&nbsp;%).</li>" +
@@ -192,23 +196,39 @@
           "<li>En las de «elija dos», el punto cuenta solo si las dos opciones son las correctas.</li>" +
         "</ul>" +
         "<label class='check'><input type='checkbox' id='extra'> Añadir el 25&nbsp;% de tiempo (75 minutos)</label>" +
-        "<div class='acciones'><button class='primario' id='empezar' type='button'>Empezar simulacro</button></div>" +
+        "<div class='modos'>" +
+          "<button type='button' class='modo' id='modo-real'>" +
+            "<strong>Examen real</strong>" +
+            "<span>Las 40 preguntas, sin comentarios mientras respondes. La nota y la corrección aparecen solo al entregar.</span>" +
+          "</button>" +
+          "<button type='button' class='modo' id='modo-prueba'>" +
+            "<strong>Examen de prueba</strong>" +
+            "<span>Marcas la opción y, al confirmarla, ves enseguida cuál es la correcta y por qué.</span>" +
+          "</button>" +
+        "</div>" +
         "<h2>Intentos anteriores</h2>" +
         "<ul class='historial'>" + filas + "</ul>" +
       "</section>"
     );
     mostrar(nodo);
-    nodo.querySelector("#empezar").addEventListener("click", function () {
-      var extra = nodo.querySelector("#extra").checked;
-      empezar(extra ? 75 : 60);
+    function minutosElegidos() {
+      return nodo.querySelector("#extra").checked ? 75 : 60;
+    }
+    nodo.querySelector("#modo-real").addEventListener("click", function () {
+      empezar(minutosElegidos(), "real");
+    });
+    nodo.querySelector("#modo-prueba").addEventListener("click", function () {
+      empezar(minutosElegidos(), "prueba");
     });
   }
 
-  function empezar(minutos) {
+  function empezar(minutos, modo) {
     var preguntas = armarExamen();
     estado = {
+      modo: modo === "prueba" ? "prueba" : "real",
       preguntas: preguntas,
       respuestas: preguntas.map(function () { return []; }),
+      reveladas: preguntas.map(function () { return false; }),
       marcas: preguntas.map(function () { return false; }),
       indice: 0,
       fin: Date.now() + minutos * 60 * 1000,
@@ -219,28 +239,69 @@
     pintarExamen();
   }
 
+  function htmlCorreccion(p, marca) {
+    var bien = mismoConjunto(marca, p.correctas);
+    var buenas = p.correctas.map(function (i) {
+      return "<li><span class='letra'>" + letra(i) + "</span><span>" + escapar(p.opciones[i]) + "</span></li>";
+    }).join("");
+    var suyas = marca.length ? marca.map(letra).join(", ") : "ninguna";
+    return "<div class='correccion " + (bien ? "ok" : "mal") + "' id='correccion' role='status'>" +
+      "<p class='correccion-titulo'>" + (bien ? "Correcta" : "Incorrecta") + "</p>" +
+      (bien ? "" : "<p>Marcaste " + escapar(suyas) + ".</p>") +
+      "<p>" + (p.correctas.length > 1 ? "Las respuestas correctas son:" : "La respuesta correcta es:") + "</p>" +
+      "<ul class='correctas-lista'>" + buenas + "</ul>" +
+      "<p class='porque'><strong>Por qué. </strong>" + escapar(p.porque) + "</p>" +
+    "</div>";
+  }
+
   function pintarExamen() {
     var p = estado.preguntas[estado.indice];
     var marca = estado.respuestas[estado.indice];
+    var revelada = estado.modo === "prueba" && estado.reveladas[estado.indice];
     var tipo = p.elegir === 2 ? "checkbox" : "radio";
     var aviso = p.elegir === 2 ? "Elija DOS opciones." : "Elija UNA opción.";
     var opciones = p.opciones.map(function (texto, i) {
       var activo = marca.indexOf(i) !== -1;
-      return "<label class='opcion" + (activo ? " activa" : "") + "'>" +
-        "<input type='" + tipo + "' name='op' value='" + i + "'" + (activo ? " checked" : "") + ">" +
+      var cls = "opcion";
+      if (revelada) {
+        if (p.correctas.indexOf(i) !== -1) cls += " buena";
+        else if (activo) cls += " mala";
+        cls += " bloqueada";
+      } else if (activo) {
+        cls += " activa";
+      }
+      return "<label class='" + cls + "'>" +
+        "<input type='" + tipo + "' name='op' value='" + i + "'" + (activo ? " checked" : "") + (revelada ? " disabled" : "") + ">" +
         "<span class='letra'>" + letra(i) + "</span><span>" + escapar(texto) + "</span></label>";
     }).join("");
 
-    var celdas = estado.preguntas.map(function (_, i) {
+    var celdas = estado.preguntas.map(function (preg, i) {
       var cls = (i === estado.indice ? "actual" : "") + (estado.respuestas[i].length ? " hecha" : "") + (estado.marcas[i] ? " bandera" : "");
+      if (estado.modo === "prueba" && estado.reveladas[i]) {
+        cls += mismoConjunto(estado.respuestas[i], preg.correctas) ? " acertada" : " fallada";
+      }
       return "<button type='button' class='celda " + cls + "' data-i='" + i + "'>" + (i + 1) + "</button>";
     }).join("");
 
     var cap = CAPITULOS[p.lo.charAt(0)];
+    var puedeConfirmar = marca.length === p.elegir;
+    var botonConfirmar = (estado.modo === "prueba" && !revelada)
+      ? "<button type='button' class='primario' id='confirmar'" + (puedeConfirmar ? "" : " disabled") + ">Confirmar respuesta</button>"
+      : "";
+    var siguientePrimario = estado.modo !== "prueba" || revelada;
+    var clsSiguiente = siguientePrimario ? " class='primario'" : "";
+    var botonAvance = estado.indice < 39
+      ? "<button type='button' id='next'" + clsSiguiente + ">Siguiente</button>"
+      : "<button type='button' id='cerrar'" + clsSiguiente + ">Entregar examen</button>";
+    var pista = (estado.modo === "prueba" && !revelada)
+      ? "<p class='pista'>Elige la respuesta y pulsa Confirmar para ver cuál es la correcta y por qué. Después no podrás cambiarla.</p>"
+      : "";
+    var correccion = revelada ? htmlCorreccion(p, marca) : "";
+
     var nodo = el(
       "<section class='examen'>" +
         "<header class='barra'>" +
-          "<div><strong>Simulacro CT-GenAI</strong><span class='meta'>Pregunta " + (estado.indice + 1) + " de 40 · " + p.puntos + (p.puntos === 1 ? " punto" : " puntos") + " · " + p.k + "</span></div>" +
+          "<div><strong>" + escapar(nombreModo(estado.modo)) + "</strong><span class='meta'>Pregunta " + (estado.indice + 1) + " de 40 · " + p.puntos + (p.puntos === 1 ? " punto" : " puntos") + " · " + p.k + "</span></div>" +
           "<div class='tiempo' id='tiempo'>" + formatear(restantes()) + "</div>" +
         "</header>" +
         "<div class='cuerpo'>" +
@@ -250,13 +311,14 @@
             "<h1>" + escapar(p.enunciado) + "</h1>" +
             "<p class='aviso'>" + aviso + "</p>" +
             "<div class='opciones'>" + opciones + "</div>" +
+            pista +
+            correccion +
             "<footer class='pie-pregunta'>" +
               "<label class='check'><input type='checkbox' id='bandera'" + (estado.marcas[estado.indice] ? " checked" : "") + "> Marcar para revisar</label>" +
               "<div class='acciones'>" +
                 "<button type='button' id='prev' " + (estado.indice === 0 ? "disabled" : "") + ">Anterior</button>" +
-                (estado.indice < 39
-                  ? "<button type='button' class='primario' id='next'>Siguiente</button>"
-                  : "<button type='button' class='primario' id='cerrar'>Entregar examen</button>") +
+                botonConfirmar +
+                botonAvance +
               "</div>" +
             "</footer>" +
           "</article>" +
@@ -288,11 +350,14 @@
     if (next) next.addEventListener("click", function () { mover(1); });
     var cerrar = nodo.querySelector("#cerrar");
     if (cerrar) cerrar.addEventListener("click", function () { confirmarCierre(); });
+    var confirmar = nodo.querySelector("#confirmar");
+    if (confirmar) confirmar.addEventListener("click", confirmarRespuesta);
 
     arrancarReloj();
   }
 
   function leerMarcas(nodo, elegir) {
+    if (estado.modo === "prueba" && estado.reveladas[estado.indice]) return;
     var previas = (estado.respuestas[estado.indice] || []).slice();
     var inputs = Array.prototype.slice.call(nodo.querySelectorAll("input[name='op']"));
     var marks = [];
@@ -311,6 +376,20 @@
     });
     var celda = nodo.querySelector('.celda[data-i="' + estado.indice + '"]');
     if (celda) celda.classList.toggle("hecha", marks.length > 0);
+    var confirmar = nodo.querySelector("#confirmar");
+    if (confirmar) confirmar.disabled = marks.length !== elegir;
+  }
+
+  function confirmarRespuesta() {
+    var p = estado.preguntas[estado.indice];
+    var marca = estado.respuestas[estado.indice] || [];
+    if (estado.modo !== "prueba" || estado.reveladas[estado.indice]) return;
+    if (marca.length !== p.elegir) return;
+    estado.reveladas[estado.indice] = true;
+    persistir();
+    pintarExamen();
+    var caja = document.getElementById("correccion");
+    if (caja && caja.scrollIntoView) caja.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function mover(delta) {
@@ -352,7 +431,8 @@
       fecha: new Date().toLocaleString("es"),
       puntos: resultado.puntos,
       aprobado: resultado.aprobado,
-      porTiempo: porTiempo
+      porTiempo: porTiempo,
+      modo: estado.modo
     });
     sessionStorage.removeItem(CLAVE_SESION);
     pintarResultado(resultado, porTiempo);
@@ -390,16 +470,16 @@
 
     var nodo = el(
       "<section class='panel resultado'>" +
-        "<p class='kicker'>" + (porTiempo ? "El tiempo se agotó" : "Examen entregado") + "</p>" +
+        "<p class='kicker'>" + escapar(nombreModo(estado.modo)) + " · " + (porTiempo ? "el tiempo se agotó" : "entregado") + "</p>" +
         "<h1 class='" + (resultado.aprobado ? "ok" : "mal") + "'>" + (resultado.aprobado ? "Aprobado" : "No aprobado") + "</h1>" +
         "<p class='nota'>" + resultado.puntos + " / " + TOTAL_PUNTOS + " puntos · el corte es " + CORTE + "</p>" +
         "<h2>Por capítulo</h2><ul class='historial'>" + filasCap + "</ul>" +
-        "<div class='acciones'><button class='primario' id='otro' type='button'>Nuevo simulacro</button><button id='inicio' type='button'>Volver al inicio</button></div>" +
+        "<div class='acciones'><button class='primario' id='otro' type='button'>Nuevo " + (estado.modo === "prueba" ? "examen de prueba" : "examen real") + "</button><button id='inicio' type='button'>Volver al inicio</button></div>" +
         "<h2>Repaso</h2>" + repaso +
       "</section>"
     );
     mostrar(nodo);
-    nodo.querySelector("#otro").addEventListener("click", function () { empezar(estado.minutos); });
+    nodo.querySelector("#otro").addEventListener("click", function () { empezar(estado.minutos, estado.modo); });
     nodo.querySelector("#inicio").addEventListener("click", pantallaInicio);
     window.scrollTo(0, 0);
   }
@@ -410,6 +490,10 @@
     try { estado = JSON.parse(crudo); }
     catch (e) { return false; }
     if (!estado || estado.cerrado || !estado.preguntas) return false;
+    if (estado.modo !== "prueba") estado.modo = "real";
+    if (!estado.reveladas || estado.reveladas.length !== estado.preguntas.length) {
+      estado.reveladas = estado.preguntas.map(function () { return false; });
+    }
     if (restantes() <= 0) { cerrarExamen(true); return true; }
     pintarExamen();
     return true;
