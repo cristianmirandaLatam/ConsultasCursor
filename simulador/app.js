@@ -88,6 +88,7 @@
         puntos: elegida.puntos,
         elegir: elegida.elegir,
         enunciado: elegida.enunciado,
+        lista: elegida.lista || null,
         opciones: orden.map(function (i) { return elegida.opciones[i]; }),
         correctas: correctas,
         porque: elegida.porque
@@ -97,6 +98,18 @@
   }
 
   function letra(i) { return String.fromCharCode(97 + i); }
+
+  var NUMERALES = ["", "UNA", "DOS", "TRES", "CUATRO"];
+  function consigna(elegir) {
+    return elegir > 1 ? "Elija " + NUMERALES[elegir] + " opciones." : "Elija UNA opción.";
+  }
+
+  function htmlLista(p) {
+    if (!p.lista || !p.lista.length) return "";
+    return "<ol class='lista'>" + p.lista.map(function (item) {
+      return "<li><span class='rotulo'>" + escapar(item[0]) + ".</span><span>" + escapar(item[1]) + "</span></li>";
+    }).join("") + "</ol>";
+  }
 
   function mismoConjunto(a, b) {
     if (!a || a.length !== b.length) return false;
@@ -120,7 +133,16 @@
   function guardarHistorial(item) {
     var h = leerHistorial();
     h.unshift(item);
-    localStorage.setItem(CLAVE_HIST, JSON.stringify(h.slice(0, 20)));
+    h = h.slice(0, 20);
+    /* Cada intento guarda el examen completo; si el navegador se queda sin espacio, se sueltan los más antiguos. */
+    while (h.length) {
+      try {
+        localStorage.setItem(CLAVE_HIST, JSON.stringify(h));
+        return;
+      } catch (e) {
+        h.pop();
+      }
+    }
   }
 
   function leerHistorial() {
@@ -178,8 +200,16 @@
     sessionStorage.removeItem(CLAVE_SESION);
     var hist = leerHistorial();
     var filas = hist.length
-      ? hist.map(function (h) {
-          return "<li><span>" + escapar(h.fecha) + " · " + escapar(nombreModo(h.modo)) + "</span><strong>" + h.puntos + "/" + TOTAL_PUNTOS + "</strong><em class='" + (h.aprobado ? "ok" : "mal") + "'>" + (h.aprobado ? "Aprobado" : "No aprobado") + "</em></li>";
+      ? hist.map(function (h, i) {
+          var revisable = h.preguntas && h.respuestas;
+          return "<li class='intento'>" +
+            "<span class='intento-fecha'>" + escapar(h.fecha) + "<small>" + escapar(nombreModo(h.modo)) + (h.porTiempo ? " · tiempo agotado" : "") + "</small></span>" +
+            "<strong>" + h.puntos + "/" + TOTAL_PUNTOS + "</strong>" +
+            "<em class='" + (h.aprobado ? "ok" : "mal") + "'>" + (h.aprobado ? "Aprobado" : "No aprobado") + "</em>" +
+            (revisable
+              ? "<button type='button' class='revisar' data-i='" + i + "'>Revisar</button>"
+              : "<span class='sin-detalle'>Sin detalle</span>") +
+          "</li>";
         }).join("")
       : "<li class='vacio'>Todavía no hay intentos en este navegador.</li>";
 
@@ -207,10 +237,17 @@
           "</button>" +
         "</div>" +
         "<h2>Intentos anteriores</h2>" +
+        (hist.length ? "<p class='nota-hist'>Pulsa «Revisar» para volver a ver el examen completo de ese intento, con tus respuestas, las correctas y la explicación de cada pregunta.</p>" : "") +
         "<ul class='historial'>" + filas + "</ul>" +
       "</section>"
     );
     mostrar(nodo);
+    nodo.querySelectorAll(".revisar").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var intento = hist[Number(b.getAttribute("data-i"))];
+        if (intento) pintarResultado(intento, false);
+      });
+    });
     function minutosElegidos() {
       return nodo.querySelector("#extra").checked ? 75 : 60;
     }
@@ -258,8 +295,8 @@
     var p = estado.preguntas[estado.indice];
     var marca = estado.respuestas[estado.indice];
     var revelada = estado.modo === "prueba" && estado.reveladas[estado.indice];
-    var tipo = p.elegir === 2 ? "checkbox" : "radio";
-    var aviso = p.elegir === 2 ? "Elija DOS opciones." : "Elija UNA opción.";
+    var tipo = p.elegir > 1 ? "checkbox" : "radio";
+    var aviso = consigna(p.elegir);
     var opciones = p.opciones.map(function (texto, i) {
       var activo = marca.indexOf(i) !== -1;
       var cls = "opcion";
@@ -309,6 +346,7 @@
           "<article class='pregunta'>" +
             "<p class='lo'>" + escapar(cap) + " · GenAI-" + escapar(p.lo) + "</p>" +
             "<h1>" + escapar(p.enunciado) + "</h1>" +
+            htmlLista(p) +
             "<p class='aviso'>" + aviso + "</p>" +
             "<div class='opciones'>" + opciones + "</div>" +
             pista +
@@ -364,8 +402,9 @@
     inputs.forEach(function (input, idx) {
       if (input.checked) marks.push(idx);
     });
-    if (elegir === 2 && marks.length > 2) {
-      var quitar = previas.length ? previas[0] : marks[0];
+    while (elegir > 1 && marks.length > elegir) {
+      var quitar = previas.length ? previas.shift() : marks[0];
+      if (marks.indexOf(quitar) === -1) quitar = marks[0];
       inputs[quitar].checked = false;
       marks = marks.filter(function (i) { return i !== quitar; });
     }
@@ -427,20 +466,28 @@
     estado.cerrado = true;
     pararReloj();
     var resultado = puntuar(estado.preguntas, estado.respuestas);
-    guardarHistorial({
+    var intento = {
       fecha: new Date().toLocaleString("es"),
       puntos: resultado.puntos,
       aprobado: resultado.aprobado,
       porTiempo: porTiempo,
-      modo: estado.modo
-    });
+      modo: estado.modo,
+      minutos: estado.minutos,
+      preguntas: estado.preguntas,
+      respuestas: estado.respuestas
+    };
+    guardarHistorial(intento);
     sessionStorage.removeItem(CLAVE_SESION);
-    pintarResultado(resultado, porTiempo);
+    pintarResultado(intento, true);
   }
 
-  function pintarResultado(resultado, porTiempo) {
+  /* Muestra el resultado de un intento: recién entregado (enVivo) o recuperado del historial. */
+  function pintarResultado(intento, enVivo) {
+    pararReloj();
+    var resultado = puntuar(intento.preguntas, intento.respuestas);
+    var porTiempo = intento.porTiempo;
     var porCap = {};
-    estado.preguntas.forEach(function (p, i) {
+    intento.preguntas.forEach(function (p, i) {
       var c = p.lo.charAt(0);
       if (!porCap[c]) porCap[c] = { bien: 0, puntos: 0, max: 0 };
       porCap[c].max += p.puntos;
@@ -454,7 +501,7 @@
       return "<li><span>Capítulo " + c + ". " + escapar(CAPITULOS[c]) + "</span><strong>" + x.puntos + " de " + x.max + " puntos</strong></li>";
     }).join("");
 
-    var repaso = estado.preguntas.map(function (p, i) {
+    var repaso = intento.preguntas.map(function (p, i) {
       var d = resultado.detalle[i];
       var suyas = d.marca.length ? d.marca.map(letra).join(", ") : "sin respuesta";
       var buenas = p.correctas.map(letra).join(", ");
@@ -465,22 +512,31 @@
       return "<details" + (d.bien ? "" : " open") + ">" +
         "<summary><span class='pill " + (d.bien ? "ok" : "mal") + "'>" + (d.bien ? "Bien" : "Mal") + "</span> " +
         (i + 1) + ". GenAI-" + escapar(p.lo) + " · " + p.k + " · " + p.puntos + " pt · su respuesta: " + suyas + " · correcta: " + buenas + "</summary>" +
-        "<p>" + escapar(p.enunciado) + "</p><ol class='repaso-ops'>" + ops + "</ol><p class='porque'><strong>Por qué. </strong>" + escapar(p.porque) + "</p></details>";
+        "<p>" + escapar(p.enunciado) + "</p>" + htmlLista(p) + "<ol class='repaso-ops'>" + ops + "</ol><p class='porque'><strong>Por qué. </strong>" + escapar(p.porque) + "</p></details>";
     }).join("");
+
+    var kicker = enVivo
+      ? escapar(nombreModo(intento.modo)) + " · " + (porTiempo ? "el tiempo se agotó" : "entregado")
+      : "Repaso del intento · " + escapar(intento.fecha) + " · " + escapar(nombreModo(intento.modo)) + (porTiempo ? " · tiempo agotado" : "");
+    var acciones = enVivo
+      ? "<button class='primario' id='otro' type='button'>Nuevo " + (intento.modo === "prueba" ? "examen de prueba" : "examen real") + "</button><button id='inicio' type='button'>Volver al inicio</button>"
+      : "<button class='primario' id='inicio' type='button'>Volver al inicio</button><button id='otro' type='button'>Nuevo " + (intento.modo === "prueba" ? "examen de prueba" : "examen real") + "</button>";
 
     var nodo = el(
       "<section class='panel resultado'>" +
-        "<p class='kicker'>" + escapar(nombreModo(estado.modo)) + " · " + (porTiempo ? "el tiempo se agotó" : "entregado") + "</p>" +
+        "<p class='kicker'>" + kicker + "</p>" +
         "<h1 class='" + (resultado.aprobado ? "ok" : "mal") + "'>" + (resultado.aprobado ? "Aprobado" : "No aprobado") + "</h1>" +
         "<p class='nota'>" + resultado.puntos + " / " + TOTAL_PUNTOS + " puntos · el corte es " + CORTE + "</p>" +
         "<h2>Por capítulo</h2><ul class='historial'>" + filasCap + "</ul>" +
-        "<div class='acciones'><button class='primario' id='otro' type='button'>Nuevo " + (estado.modo === "prueba" ? "examen de prueba" : "examen real") + "</button><button id='inicio' type='button'>Volver al inicio</button></div>" +
+        "<div class='acciones'>" + acciones + "</div>" +
         "<h2>Repaso</h2>" + repaso +
+        "<div class='acciones acciones-pie'><button id='inicio-pie' type='button'>Volver al inicio</button></div>" +
       "</section>"
     );
     mostrar(nodo);
-    nodo.querySelector("#otro").addEventListener("click", function () { empezar(estado.minutos, estado.modo); });
+    nodo.querySelector("#otro").addEventListener("click", function () { empezar(intento.minutos || 60, intento.modo); });
     nodo.querySelector("#inicio").addEventListener("click", pantallaInicio);
+    nodo.querySelector("#inicio-pie").addEventListener("click", pantallaInicio);
     window.scrollTo(0, 0);
   }
 

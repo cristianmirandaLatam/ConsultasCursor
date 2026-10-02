@@ -55,6 +55,16 @@ button.modo:hover, button.modo:focus-visible { border-color: var(--azul); backgr
 .historial { list-style: none; padding: 0; margin: 0; }
 .historial li { display: flex; gap: 0.8rem; justify-content: space-between; border-top: 1px solid var(--linea); padding: 0.45rem 0; }
 .historial .vacio { color: var(--suave); }
+.historial li.intento { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 0.8rem; }
+.intento-fecha small { display: block; color: var(--suave); font-size: 0.82rem; }
+.intento .revisar { padding: 0.35rem 0.8rem; border-color: var(--azul); color: var(--azul); font-weight: 600; }
+.intento .revisar:hover, .intento .revisar:focus-visible { background: var(--azul-claro); }
+.intento .sin-detalle { color: var(--suave); font-size: 0.85rem; }
+.nota-hist { color: var(--suave); font-size: 0.92rem; margin: 0 0 0.5rem; }
+.acciones-pie { margin-top: 1.2rem; }
+.lista { list-style: none; padding: 0; margin: 0.2rem 0 0.8rem; }
+.lista li { display: flex; gap: 0.55rem; align-items: flex-start; padding: 0.3rem 0.5rem; border-left: 3px solid var(--linea); margin: 0.25rem 0; background: var(--fondo); border-radius: 0 6px 6px 0; }
+.lista .rotulo { font-weight: 700; min-width: 1.8rem; color: var(--azul); }
 .ok { color: var(--ok); }
 .mal { color: var(--mal); }
 
@@ -116,4 +126,7 @@ summary { cursor: pointer; }
   .mapa { position: sticky; top: 0; background: var(--fondo); padding-bottom: 0.4rem; z-index: 2; }
   .panel { margin: 0.6rem; }
   .modos { grid-template-columns: 1fr; }
+  .historial li.intento { grid-template-columns: 1fr auto; }
+  .historial li.intento em { grid-column: 1; }
+  .historial li.intento .revisar, .historial li.intento .sin-detalle { grid-column: 2; grid-row: 1 / span 2; }
 }
