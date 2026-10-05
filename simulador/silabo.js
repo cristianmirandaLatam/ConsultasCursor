@@ -210,10 +210,16 @@
         ["Token", "Pieza en la que se parte el texto para que el modelo lo procese.", "token; tokenization"],
         ["Ventana de contexto", "Cantidad de tokens que el modelo puede tener en cuenta a la vez.", "context window"],
         ["Modelo fundacional", "Modelo entrenado de forma general, antes de ajustarlo a instrucciones.", "foundation LLM"],
-        ["Modelo multimodal", "Acepta más de un tipo de entrada, por ejemplo texto e imagen.", "multimodal model"]
+        ["Modelo multimodal", "Acepta más de un tipo de entrada, por ejemplo texto e imagen.", "multimodal model"],
+        ["Chatbot con IA", "Conversación abierta con el modelo, sin un recorrido de prueba fijo.", "AI chatbot"],
+        ["Incrustación", "Número que representa un token y acerca a los que se parecen en significado.", "embedding"],
+        ["Transformador", "Arquitectura de red con la que el modelo relaciona los tokens de una secuencia.", "transformer"],
+        ["Modelo ajustado por instrucciones", "Modelo fundacional afinado para seguir mejor lo que se le pide.", "instruction-tuned LLM"],
+        ["Modelo de razonamiento", "Modelo que dedica más pasos a un problema que hay que encadenar.", "reasoning LLM"]
       ], "Introducción"],
       ["2", [
         ["Prompt", "Instrucción que se le da al modelo, con contexto, datos, límites y formato.", "prompt"],
+        ["Procesamiento del lenguaje natural", "Tratamiento automático del lenguaje humano, como entender, resumir o redactar.", "natural language processing, NLP"],
         ["Prompt de sistema", "Reglas o rol que se mantienen a lo largo de la sesión.", "system prompt"],
         ["Prompt de usuario", "Encargo concreto de este turno.", "user prompt"],
         ["Sin ejemplos", "Solo la consigna, sin casos de muestra.", "zero-shot prompting"],
@@ -238,6 +244,7 @@
       ["4", [
         ["Front-end", "Recoge la entrada de la persona y muestra la salida.", "front-end"],
         ["Back-end", "Prepara el prompt juntando la entrada con datos recuperados.", "back-end"],
+        ["Base de datos vectorial", "Almacén de fragmentos convertidos en vectores, para recuperar los más parecidos en significado.", "vector database"],
         ["Generación aumentada por recuperación", "Se buscan fragmentos pertinentes, se añaden al prompt y entonces el modelo responde.", "retrieval-augmented generation, RAG"],
         ["Agente", "El modelo persigue un objetivo y puede usar herramientas. La verificación humana se mantiene donde el riesgo lo pide.", "LLM-powered agent"],
         ["Ajuste fino", "Se sigue entrenando el modelo con datos de la tarea de prueba.", "fine-tuning"],
