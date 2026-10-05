@@ -437,7 +437,208 @@
   }
 
   function enlaceSilabo(pagina, texto) {
-    return "<a class='enlace-silabo' href='" + urlSilabo(pagina) + "' target='_blank' rel='noopener noreferrer'>" + escapar(texto) + "</a>";
+    return "<a class='enlace-silabo' href='" + urlSilabo(pagina) + "' data-pagina='" + (pagina || 1) + "' target='_blank' rel='noopener noreferrer'>" + escapar(texto) + "</a>";
+  }
+
+  /* ---------- visor del sílabo ----------
+     Dibuja la página pedida del PDF oficial dentro de un modal, sin salir del examen.
+     El PDF se lee desde el sitio del SSTQB; la biblioteca pdf.js se carga solo al abrir el visor. */
+  var PDFJS_CDN = [
+    "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/",
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/"
+  ];
+  var pdfjsPromesa = null;
+  var docSilaboPromesa = null;
+  var visor = null;
+
+  function importarModulo(url) {
+    // Se evita escribir import() en el código para que un navegador antiguo no rechace todo el archivo.
+    return new Function("u", "return import(u)")(url);
+  }
+
+  function cargarPdfjs() {
+    if (pdfjsPromesa) return pdfjsPromesa;
+    pdfjsPromesa = PDFJS_CDN.reduce(function (anterior, base) {
+      return anterior.catch(function () {
+        return importarModulo(base + "pdf.min.mjs").then(function (lib) {
+          lib.GlobalWorkerOptions.workerSrc = base + "pdf.worker.min.mjs";
+          return lib;
+        });
+      });
+    }, Promise.reject(new Error("sin visor"))).catch(function (e) {
+      pdfjsPromesa = null;
+      throw e;
+    });
+    return pdfjsPromesa;
+  }
+
+  function cargarDocumentoSilabo() {
+    if (docSilaboPromesa) return docSilaboPromesa;
+    docSilaboPromesa = cargarPdfjs().then(function (lib) {
+      return lib.getDocument({ url: window.SILABO.url, disableAutoFetch: false }).promise;
+    }).catch(function (e) {
+      docSilaboPromesa = null;
+      throw e;
+    });
+    return docSilaboPromesa;
+  }
+
+  function abrirVisorSilabo(pagina) {
+    if (!window.SILABO) return;
+    pagina = Math.max(1, Math.min(Number(pagina) || 1, window.SILABO.paginas || 9999));
+    if (visor) { irAPagina(pagina); return; }
+    var fondo = el(
+      "<div class='modal-fondo visor-fondo'>" +
+        "<div class='visor' role='dialog' aria-modal='true' aria-labelledby='visor-titulo'>" +
+          "<header class='visor-barra'>" +
+            "<div class='visor-titulo-bloque'>" +
+              "<p class='kicker'>Sílabo CT-GenAI</p>" +
+              "<h2 id='visor-titulo'>Página <span id='visor-num'>" + pagina + "</span>" + (window.SILABO.paginas ? " de " + window.SILABO.paginas : "") + "</h2>" +
+            "</div>" +
+            "<div class='visor-acciones'>" +
+              "<button type='button' id='visor-prev' aria-label='Página anterior'>‹ Anterior</button>" +
+              "<button type='button' id='visor-next' aria-label='Página siguiente'>Siguiente ›</button>" +
+              "<button type='button' id='visor-menos' aria-label='Reducir' title='Reducir' disabled>−</button>" +
+              "<button type='button' id='visor-mas' aria-label='Ampliar' title='Ampliar'>+</button>" +
+              "<button type='button' class='primario' id='visor-cerrar'>Cerrar</button>" +
+            "</div>" +
+          "</header>" +
+          "<div class='visor-cuerpo' id='visor-cuerpo'>" +
+            "<p class='visor-estado' id='visor-estado'>Cargando la página del sílabo…</p>" +
+            "<canvas id='visor-lienzo' hidden></canvas>" +
+          "</div>" +
+          "<footer class='visor-pie'>" +
+            "<span>" + escapar(window.SILABO.nombre || "Programa de estudio oficial") + " · © ISTQB. Se muestra desde el sitio del SSTQB.</span>" +
+            "<a id='visor-abrir' href='" + urlSilabo(pagina) + "' target='_blank' rel='noopener noreferrer'>Abrir el PDF en otra pestaña</a>" +
+          "</footer>" +
+        "</div>" +
+      "</div>"
+    );
+    document.body.appendChild(fondo);
+    document.body.classList.add("modal-abierto");
+    visor = {
+      fondo: fondo,
+      pagina: pagina,
+      zoom: 1,
+      pedida: 0,
+      previo: document.activeElement,
+      lienzo: fondo.querySelector("#visor-lienzo"),
+      estado: fondo.querySelector("#visor-estado"),
+      num: fondo.querySelector("#visor-num"),
+      prev: fondo.querySelector("#visor-prev"),
+      next: fondo.querySelector("#visor-next"),
+      abrir: fondo.querySelector("#visor-abrir"),
+      cuerpo: fondo.querySelector("#visor-cuerpo")
+    };
+    fondo.querySelector("#visor-cerrar").addEventListener("click", cerrarVisorSilabo);
+    fondo.querySelector("#visor-cerrar").focus();
+    visor.prev.addEventListener("click", function () { irAPagina(visor.pagina - 1); });
+    visor.next.addEventListener("click", function () { irAPagina(visor.pagina + 1); });
+    fondo.querySelector("#visor-mas").addEventListener("click", function () { ajustarZoom(1); });
+    fondo.querySelector("#visor-menos").addEventListener("click", function () { ajustarZoom(-1); });
+    fondo.addEventListener("click", function (ev) { if (ev.target === fondo) cerrarVisorSilabo(); });
+    visor.onKey = function (ev) {
+      if (ev.key === "Escape") { ev.preventDefault(); cerrarVisorSilabo(); }
+      else if (ev.key === "ArrowLeft") irAPagina(visor.pagina - 1);
+      else if (ev.key === "ArrowRight") irAPagina(visor.pagina + 1);
+    };
+    visor.onResize = function () { if (visor) dibujarPagina(visor.pagina); };
+    document.addEventListener("keydown", visor.onKey);
+    window.addEventListener("resize", visor.onResize);
+    irAPagina(pagina);
+  }
+
+  var ZOOMS = [1, 1.4, 1.8, 2.4];
+
+  function ajustarZoom(paso) {
+    if (!visor) return;
+    var i = ZOOMS.indexOf(visor.zoom);
+    if (i === -1) i = 0;
+    i = Math.max(0, Math.min(ZOOMS.length - 1, i + paso));
+    if (ZOOMS[i] === visor.zoom) return;
+    visor.zoom = ZOOMS[i];
+    visor.fondo.querySelector("#visor-menos").disabled = i === 0;
+    visor.fondo.querySelector("#visor-mas").disabled = i === ZOOMS.length - 1;
+    dibujarPagina(visor.pagina);
+  }
+
+  function irAPagina(pagina) {
+    if (!visor) return;
+    var total = window.SILABO.paginas || 9999;
+    pagina = Math.max(1, Math.min(pagina, total));
+    visor.pagina = pagina;
+    visor.num.textContent = pagina;
+    visor.abrir.href = urlSilabo(pagina);
+    visor.prev.disabled = pagina <= 1;
+    visor.next.disabled = pagina >= total;
+    visor.cuerpo.scrollTop = 0;
+    dibujarPagina(pagina);
+  }
+
+  function dibujarPagina(pagina) {
+    if (!visor) return;
+    var pedida = ++visor.pedida;
+    visor.estado.hidden = false;
+    visor.estado.textContent = "Cargando la página " + pagina + " del sílabo…";
+    visor.estado.className = "visor-estado";
+    cargarDocumentoSilabo().then(function (doc) {
+      if (!visor || visor.pedida !== pedida) return;
+      if (doc.numPages && doc.numPages !== window.SILABO.paginas) {
+        window.SILABO.paginas = doc.numPages;
+        visor.next.disabled = pagina >= doc.numPages;
+      }
+      return doc.getPage(pagina).then(function (pag) {
+        if (!visor || visor.pedida !== pedida) return;
+        var ancho = Math.max(280, (visor.cuerpo.clientWidth - 14) * (visor.zoom || 1));
+        var base = pag.getViewport({ scale: 1 });
+        var escala = ancho / base.width;
+        var ratio = Math.min(window.devicePixelRatio || 1, 3);
+        var vista = pag.getViewport({ scale: escala * ratio });
+        var lienzo = visor.lienzo;
+        lienzo.width = Math.floor(vista.width);
+        lienzo.height = Math.floor(vista.height);
+        lienzo.style.width = Math.floor(vista.width / ratio) + "px";
+        lienzo.style.height = Math.floor(vista.height / ratio) + "px";
+        var ctx = lienzo.getContext("2d");
+        ctx.clearRect(0, 0, lienzo.width, lienzo.height);
+        return pag.render({ canvasContext: ctx, viewport: vista }).promise.then(function () {
+          if (!visor || visor.pedida !== pedida) return;
+          visor.estado.hidden = true;
+          lienzo.hidden = false;
+        });
+      });
+    }).catch(function () {
+      if (!visor || visor.pedida !== pedida) return;
+      visor.lienzo.hidden = true;
+      visor.estado.hidden = false;
+      visor.estado.className = "visor-estado visor-error";
+      visor.estado.innerHTML = "No se pudo mostrar la página aquí. Puede ser que no haya conexión o que el navegador no permita el visor. " +
+        "<a href='" + urlSilabo(pagina) + "' target='_blank' rel='noopener noreferrer'>Abrir la página " + pagina + " del PDF en otra pestaña</a>.";
+    });
+  }
+
+  function cerrarVisorSilabo() {
+    if (!visor) return;
+    document.removeEventListener("keydown", visor.onKey);
+    window.removeEventListener("resize", visor.onResize);
+    document.body.classList.remove("modal-abierto");
+    visor.fondo.remove();
+    var previo = visor.previo;
+    visor = null;
+    if (previo && previo.focus && document.body.contains(previo)) {
+      try { previo.focus(); } catch (e) { /* el enlace de origen ya no está en la página */ }
+    }
+  }
+
+  function instalarEnlacesSilabo() {
+    document.addEventListener("click", function (ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest("a.enlace-silabo[data-pagina]") : null;
+      if (!a) return;
+      // Con Ctrl, Cmd o botón central se respeta la apertura en otra pestaña.
+      if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.button !== 0) return;
+      ev.preventDefault();
+      abrirVisorSilabo(a.getAttribute("data-pagina"));
+    });
   }
 
   function htmlSilabo(p) {
@@ -453,7 +654,7 @@
       " · " + escapar(tema.titulo) + ". Página " + tema.pagina + " del programa oficial.</p>" +
       "<p class='resumen-silabo'>" + escapar(tema.resumen) + "</p>" +
       aplica +
-      "<p>" + enlaceSilabo(tema.pagina, "Abrir la página " + tema.pagina + " del sílabo") + "</p>" +
+      "<p>" + enlaceSilabo(tema.pagina, "Ver la página " + tema.pagina + " del sílabo") + " <span class='nota-visor'>Se abre aquí mismo, sin salir del examen.</span></p>" +
     "</details>";
   }
 
@@ -492,10 +693,10 @@
     }).join("");
     return "<details class='silabo-completo'>" +
       "<summary>Sílabo completo para repaso</summary>" +
-      "<p>Programa de estudios oficial CT-GenAI v1.0 en español. El texto es del ISTQB y se abre en su documento.</p>" +
-      "<p>" + enlaceSilabo(1, "Abrir el sílabo completo") + "</p>" +
+      "<p>Programa de estudio oficial CT-GenAI v1.0 en español, en la traducción del SSTQB. El texto es del ISTQB: cada enlace muestra la página del PDF aquí mismo, y desde el visor se puede abrir el documento completo.</p>" +
+      "<p>" + enlaceSilabo(1, "Ver el sílabo desde la portada") + "</p>" +
       "<ul class='indice-silabo'>" + caps + "</ul>" +
-      "<p class='nota-hist'>Cada objetivo de aprendizaje abre la página donde el sílabo lo explica.</p>" +
+      "<p class='nota-hist'>Cada objetivo de aprendizaje muestra la página donde el sílabo lo explica.</p>" +
       "<ul class='indice-silabo'>" + objetivos + "</ul>" +
     "</details>";
   }
@@ -1022,6 +1223,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     window.BANCO.forEach(function (p, i) { p._id = p.lo + "#" + i; });
     instalarIrArriba();
+    instalarEnlacesSilabo();
     if (!restaurar()) pantallaInicio();
   });
 
